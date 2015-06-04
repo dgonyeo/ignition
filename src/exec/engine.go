@@ -73,10 +73,8 @@ func (e Engine) Run() bool {
 	switch err {
 	case nil:
 		return storage{
-			util.Util{
-				Logger:  &e.Logger,
-				DestDir: e.Root,
-			},
+			logger:  &e.Logger,
+			DestDir: util.DestDir(e.Root),
 		}.Run(cfg)
 	case config.ErrCloudConfig, config.ErrScript:
 		e.Logger.Info("%v: ignoring and exiting...", err)
