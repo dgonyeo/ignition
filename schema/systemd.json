@@ -1,0 +1,32 @@
+{
+    "type": "object",
+    "properties": {
+        "units": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/unit" }
+        }
+    },
+
+    "definitions": {
+        "unit": {
+            "type": "object",
+            "properties": {
+                "name":     { "type": "string" },
+                "enable":   { "type": "boolean" },
+                "mask":     { "type": "boolean" },
+                "contents": { "type": "string" },
+                "dropins": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/dropin" }
+                }
+            }
+        },
+        "dropin": {
+            "type": "object",
+            "properties": {
+                "name":     { "type": "string" },
+                "contents": { "type": "string" }
+            }
+        }
+    }
+}

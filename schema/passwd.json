@@ -1,0 +1,55 @@
+{
+    "type": "object",
+    "properties": {
+        "users": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/user" }
+        },
+        "groups": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/group" }
+        }
+    },
+
+    "definitions": {
+        "user": {
+            "type": "object",
+            "properties": {
+                "name": { "type": "string" },
+                "passwordHash": { "type": "string" },
+                "sshAuthorizedKeys": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "create": { "$ref": "#/definitions/usercreate" }
+            }
+        },
+        "group": {
+            "type": "object",
+            "properties": {
+                "name":         { "type": "string" },
+                "gid":          { "type": "integer" },
+                "passwordHash": { "type": "string" },
+                "system":       { "type": "boolean" }
+            }
+        },
+        "usercreate": {
+            "type": "object",
+            "properties": {
+                "uid":          { "type": "integer" },
+                "gecos":        { "type": "string" },
+                "homeDir":      { "type": "string" },
+                "noCreateHome": { "type": "boolean" },
+                "primaryGroup": { "type": "string" },
+                "groups": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "noUserGroup": { "type": "boolean" },
+                "system":      { "type": "boolean" },
+                "noLogInit":   { "type": "boolean" },
+                "shell":       { "type": "string" }
+            }
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "properties": {
+        "name":  { "type": "string" },
+        "mount": { "$ref": "#/definitions/mount" },
+        "path":  { "type": "string" }
+    },
+
+    "definitions": {
+        "mount": {
+            "type": "object",
+            "properties": {
+                "device": { "type": "string" },
+                "format": { "type": "string" },
+                "create": {
+                    "type": "object",
+                    "properties": {
+                        "force": { "type": "boolean" },
+                        "options": {
+                            "type": "array",
+                            "items": { "type": "string" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "type": "object",
+    "properties": {
+        "version": {
+            "type": "string"
+        },
+        "config": {
+            "$ref": "#/definitions/ignition-config"
+        },
+        "timeouts": {
+            "$ref": "#/definitions/timeouts"
+        }
+    },
+
+    "definitions": {
+        "ignition-config": {
+            "type": "object",
+            "properties": {
+                "append": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/config-reference"
+                    }
+                },
+                "replace": {
+                    "$ref": "#/definitions/config-reference"
+                }
+            }
+        },
+        "config-reference": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "type": "string"
+                },
+                "verification": {
+                    "type": "string"
+                }
+            }
+        },
+        "timeouts": {
+            "type": "object",
+            "properties": {
+                "httpResponseHeaders": {
+                    "type": "integer"
+                },
+                "httpTotal": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

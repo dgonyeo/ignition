@@ -1,0 +1,134 @@
+{
+    "type": "object",
+    "properties": {
+        "disks": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/disk" }
+        },
+        "raid": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/raid" }
+        },
+        "filesystems": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/filesystem" }
+        },
+        "files": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/file" }
+        },
+        "directories": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/directory" }
+        }
+    },
+
+    "definitions": {
+        "disk": {
+            "type": "object",
+            "properties": {
+                "device":     { "type": "string" },
+                "wipeTable":  { "type": "boolean" },
+                "partitions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/partition"
+                    }
+                }
+            }
+        },
+        "raid": {
+            "type": "object",
+            "properties": {
+                "name":   { "type": "string" },
+                "level":  { "type": "string" },
+                "spares": { "type": "integer" },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "filesystem": {
+            "type": "object",
+            "properties": {
+                "name":  { "type": "string" },
+                "mount": { "$ref": "#/definitions/mount" },
+                "path":  { "type": "string" }
+            }
+        },
+        "file": {
+            "allOf": [
+                { "$ref": "#/definitions/node" },
+
+                {
+                    "properties": {
+                        "contents": {
+                            "$ref": "#/definitions/file-contents"
+                        }
+                    }
+                }
+            ]
+        },
+        "directory": {
+            "$ref": "#/definitions/node"
+        },
+        "partition": {
+            "type": "object",
+            "properties": {
+                "label":    { "type": "string" },
+                "number":   { "type": "integer" },
+                "size":     { "type": "integer" },
+                "start":    { "type": "integer" },
+                "typeGuid": { "type": "string" }
+            }
+        },
+        "mount": {
+            "type": "object",
+            "properties": {
+                "device": { "type": "string" },
+                "format": { "type": "string" },
+                "create": {
+                    "type": "object",
+                    "properties": {
+                        "force": { "type": "boolean" },
+                        "options": {
+                            "type": "array",
+                            "items": { "type": "string" }
+                        }
+                    }
+                }
+            }
+        },
+        "file-contents": {
+            "type": "object",
+            "properties": {
+                "compression":  { "type": "string" },
+                "source":       { "type": "string" },
+                "verification": { "type": "string" }
+            }
+        },
+        "node": {
+            "type": "object",
+            "properties": {
+                "filesystem": { "type": "string" },
+                "path":       { "type": "string" },
+                "mode":       { "type": "string" },
+                "user": {
+                    "type": "object",
+                    "properties": {
+                        "id": { "type": "integer" }
+                    }
+                },
+                "group": {
+                    "type": "object",
+                    "properties": {
+                        "id": { "type": "integer" }
+                    }
+                }
+            }
+        }
+    }
+}
