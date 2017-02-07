@@ -14,10 +14,10 @@
 
 package types
 
-type Storage struct {
-	Disks       []Disk       `json:"disks,omitempty"`
-	Arrays      []Raid       `json:"raid,omitempty"`
-	Filesystems []Filesystem `json:"filesystems,omitempty"`
-	Files       []File       `json:"files,omitempty"`
-	Directories []Directory  `json:"directories,omitempty"`
-}
+//type Storage struct {
+//	Disks       []Disk       `json:"disks,omitempty"`
+//	Arrays      []Raid       `json:"raid,omitempty"`
+//	Filesystems []Filesystem `json:"filesystems,omitempty"`
+//	Files       []File       `json:"files,omitempty"`
+//	Directories []Directory  `json:"directories,omitempty"`
+//}

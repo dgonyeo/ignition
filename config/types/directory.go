@@ -14,16 +14,17 @@
 
 package types
 
-import (
-	"path/filepath"
-)
-
-type Directory Node
-
-func (d *Directory) Depth() int {
-	count := 0
-	for p := filepath.Clean(string(d.Path)); p != "/"; count++ {
-		p = filepath.Dir(p)
-	}
-	return count
-}
+//
+//import (
+//	"path/filepath"
+//)
+//
+//type Directory Node
+//
+//func (d *Directory) Depth() int {
+//	count := 0
+//	for p := filepath.Clean(string(d.Path)); p != "/"; count++ {
+//		p = filepath.Dir(p)
+//	}
+//	return count
+//}

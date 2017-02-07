@@ -14,14 +14,116 @@
 
 package types
 
+import (
+	"errors"
+	"fmt"
+	"net/url"
+
+	"github.com/vincent-petithory/dataurl"
+
+	"github.com/coreos/ignition/config/validate/report"
+)
+
+var (
+	ErrCompressionInvalid = errors.New("invalid compression method")
+)
+
 // File represents regular files
-type File struct {
-	Node
-	Contents FileContents `json:"contents,omitempty"`
+//type File struct {
+//	Node
+//	Contents FileContents `json:"contents,omitempty"`
+//}
+
+//type FileContents struct {
+//	Compression  Compression  `json:"compression,omitempty"`
+//	Source       Url          `json:"source,omitempty"`
+//	Verification Verification `json:"verification,omitempty"`
+//}
+
+func (fc FileContents) Validate() report.Report {
+	r := report.Report{}
+	switch fc.Compression {
+	case "", "gzip":
+	default:
+		r.Add(report.Entry{
+			Message: ErrCompressionInvalid.Error(),
+			Kind:    report.EntryError,
+		})
+	}
+	u, err := url.Parse(fc.Source)
+	if err != nil {
+		r.Add(report.Entry{
+			Message: fmt.Sprintf("invalid url: %q: ", fc.Source, err.Error()),
+			Kind:    report.EntryError,
+		})
+	}
+
+	switch u.Scheme {
+	case "http", "https", "oem":
+
+	case "data":
+		if _, err := dataurl.DecodeString(fc.Source); err != nil {
+			r.Add(report.Entry{
+				Message: fmt.Sprintf("invalid data url: %v", err.Error()),
+				Kind:    report.EntryError,
+			})
+		}
+	default:
+		r.Add(report.Entry{
+			Message: fmt.Sprintf("invalid url scheme: %q", u.Scheme),
+			Kind:    report.EntryError,
+		})
+	}
+	return r
 }
 
-type FileContents struct {
-	Compression  Compression  `json:"compression,omitempty"`
-	Source       Url          `json:"source,omitempty"`
-	Verification Verification `json:"verification,omitempty"`
-}
+//func (c Compression) Validate() report.Report {
+//	switch c {
+//	case "", "gzip":
+//	default:
+//		return report.ReportFromError(ErrCompressionInvalid, report.EntryError)
+//	}
+//	return report.Report{}
+//}
+
+//func (u *Url) UnmarshalJSON(data []byte) error {
+//	var tu string
+//	if err := json.Unmarshal(data, &tu); err != nil {
+//		return err
+//	}
+//
+//	pu, err := url.Parse(tu)
+//	if err != nil {
+//		return err
+//	}
+//
+//	*u = Url(*pu)
+//	return nil
+//}
+
+//func (u Url) MarshalJSON() ([]byte, error) {
+//	return []byte(`"` + u.String() + `"`), nil
+//}
+
+//func (u Url) String() string {
+//	tu := url.URL(u)
+//	return (&tu).String()
+//}
+
+//func (u Url) Validate() report.Report {
+//	// Empty url is valid, indicates an empty file
+//	if u.String() == "" {
+//		return report.Report{}
+//	}
+//	switch url.URL(u).Scheme {
+//	case "http", "https", "oem":
+//		return report.Report{}
+//	case "data":
+//		if _, err := dataurl.DecodeString(u.String()); err != nil {
+//			return report.ReportFromError(err, report.EntryError)
+//		}
+//		return report.Report{}
+//	default:
+//		return report.ReportFromError(ErrInvalidScheme, report.EntryError)
+//	}
+//}

@@ -15,13 +15,12 @@
 package types
 
 import (
-	"crypto"
-	"encoding/hex"
-	"encoding/json"
+	//"crypto"
+	//"encoding/hex"
+	//"encoding/json"
 	"errors"
-	"strings"
-
-	"github.com/coreos/ignition/config/validate/report"
+	//"strings"
+	//"github.com/coreos/ignition/config/validate/report"
 )
 
 var (
@@ -30,44 +29,44 @@ var (
 	ErrHashUnrecognized = errors.New("unrecognized hash function")
 )
 
-type Hash struct {
-	Function string
-	Sum      string
-}
-
-func (h *Hash) UnmarshalJSON(data []byte) error {
-	var th string
-	if err := json.Unmarshal(data, &th); err != nil {
-		return err
-	}
-
-	parts := strings.SplitN(th, "-", 2)
-	if len(parts) != 2 {
-		return ErrHashMalformed
-	}
-
-	h.Function = parts[0]
-	h.Sum = parts[1]
-
-	return nil
-}
-
-func (h Hash) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + h.Function + "-" + h.Sum + `"`), nil
-}
-
-func (h Hash) Validate() report.Report {
-	var hash crypto.Hash
-	switch h.Function {
-	case "sha512":
-		hash = crypto.SHA512
-	default:
-		return report.ReportFromError(ErrHashUnrecognized, report.EntryError)
-	}
-
-	if len(h.Sum) != hex.EncodedLen(hash.Size()) {
-		return report.ReportFromError(ErrHashWrongSize, report.EntryError)
-	}
-
-	return report.Report{}
-}
+//type Hash struct {
+//	Function string
+//	Sum      string
+//}
+//
+//func (h *Hash) UnmarshalJSON(data []byte) error {
+//	var th string
+//	if err := json.Unmarshal(data, &th); err != nil {
+//		return err
+//	}
+//
+//	parts := strings.SplitN(th, "-", 2)
+//	if len(parts) != 2 {
+//		return ErrHashMalformed
+//	}
+//
+//	h.Function = parts[0]
+//	h.Sum = parts[1]
+//
+//	return nil
+//}
+//
+//func (h Hash) MarshalJSON() ([]byte, error) {
+//	return []byte(`"` + h.Function + "-" + h.Sum + `"`), nil
+//}
+//
+//func (h Hash) Validate() report.Report {
+//	var hash crypto.Hash
+//	switch h.Function {
+//	case "sha512":
+//		hash = crypto.SHA512
+//	default:
+//		return report.ReportFromError(ErrHashUnrecognized, report.EntryError)
+//	}
+//
+//	if len(h.Sum) != hex.EncodedLen(hash.Size()) {
+//		return report.ReportFromError(ErrHashWrongSize, report.EntryError)
+//	}
+//
+//	return report.Report{}
+//}

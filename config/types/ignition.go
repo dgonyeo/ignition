@@ -15,7 +15,7 @@
 package types
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"errors"
 
 	"github.com/coreos/go-semver/semver"
@@ -28,42 +28,50 @@ var (
 	ErrNewVersion = errors.New("incorrect config version (too new)")
 )
 
-type Ignition struct {
-	Version  IgnitionVersion `json:"version,omitempty"  merge:"old"`
-	Config   IgnitionConfig  `json:"config,omitempty"   merge:"new"`
-	Timeouts Timeouts        `json:"timeouts,omitempty" merge:"new"`
-}
+//type Ignition struct {
+//	Version  IgnitionVersion `json:"version,omitempty"  merge:"old"`
+//	Config   IgnitionConfig  `json:"config,omitempty"   merge:"new"`
+//	Timeouts Timeouts        `json:"timeouts,omitempty" merge:"new"`
+//}
+//
+//type IgnitionConfig struct {
+//	Append  []ConfigReference `json:"append,omitempty"`
+//	Replace *ConfigReference  `json:"replace,omitempty"`
+//}
+//
+//type ConfigReference struct {
+//	Source       Url          `json:"source,omitempty"`
+//	Verification Verification `json:"verification,omitempty"`
+//}
+//
+//type IgnitionVersion semver.Version
+//
+//func (v *IgnitionVersion) UnmarshalJSON(data []byte) error {
+//	tv := semver.Version(*v)
+//	if err := json.Unmarshal(data, &tv); err != nil {
+//		return err
+//	}
+//	*v = IgnitionVersion(tv)
+//	return nil
+//}
+//
+//func (v IgnitionVersion) MarshalJSON() ([]byte, error) {
+//	return semver.Version(v).MarshalJSON()
+//}
 
-type IgnitionConfig struct {
-	Append  []ConfigReference `json:"append,omitempty"`
-	Replace *ConfigReference  `json:"replace,omitempty"`
-}
-
-type ConfigReference struct {
-	Source       Url          `json:"source,omitempty"`
-	Verification Verification `json:"verification,omitempty"`
-}
-
-type IgnitionVersion semver.Version
-
-func (v *IgnitionVersion) UnmarshalJSON(data []byte) error {
-	tv := semver.Version(*v)
-	if err := json.Unmarshal(data, &tv); err != nil {
-		return err
-	}
-	*v = IgnitionVersion(tv)
-	return nil
-}
-
-func (v IgnitionVersion) MarshalJSON() ([]byte, error) {
-	return semver.Version(v).MarshalJSON()
+func (v IgnitionVersion) Semver() (*semver.Version, error) {
+	return semver.NewVersion(v.Version)
 }
 
 func (v IgnitionVersion) Validate() report.Report {
-	if MaxVersion.Major > v.Major {
+	tv, err := v.Semver()
+	if err != nil {
 		return report.ReportFromError(ErrOldVersion, report.EntryError)
 	}
-	if MaxVersion.LessThan(semver.Version(v)) {
+	if MaxVersion.Major > tv.Major {
+		return report.ReportFromError(ErrOldVersion, report.EntryError)
+	}
+	if MaxVersion.LessThan(*tv) {
 		return report.ReportFromError(ErrNewVersion, report.EntryError)
 	}
 	return report.Report{}

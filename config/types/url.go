@@ -15,58 +15,58 @@
 package types
 
 import (
-	"encoding/json"
+	//	"encoding/json"
 	"errors"
-	"net/url"
-
-	"github.com/coreos/ignition/config/validate/report"
-	"github.com/vincent-petithory/dataurl"
+	//	"net/url"
+	//
+	//	"github.com/coreos/ignition/config/validate/report"
+	//	"github.com/vincent-petithory/dataurl"
 )
 
 var (
 	ErrInvalidScheme = errors.New("invalid url scheme")
 )
 
-type Url url.URL
-
-func (u *Url) UnmarshalJSON(data []byte) error {
-	var tu string
-	if err := json.Unmarshal(data, &tu); err != nil {
-		return err
-	}
-
-	pu, err := url.Parse(tu)
-	if err != nil {
-		return err
-	}
-
-	*u = Url(*pu)
-	return nil
-}
-
-func (u Url) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + u.String() + `"`), nil
-}
-
-func (u Url) String() string {
-	tu := url.URL(u)
-	return (&tu).String()
-}
-
-func (u Url) Validate() report.Report {
-	// Empty url is valid, indicates an empty file
-	if u.String() == "" {
-		return report.Report{}
-	}
-	switch url.URL(u).Scheme {
-	case "http", "https", "oem":
-		return report.Report{}
-	case "data":
-		if _, err := dataurl.DecodeString(u.String()); err != nil {
-			return report.ReportFromError(err, report.EntryError)
-		}
-		return report.Report{}
-	default:
-		return report.ReportFromError(ErrInvalidScheme, report.EntryError)
-	}
-}
+//type Url url.URL
+//
+//func (u *Url) UnmarshalJSON(data []byte) error {
+//	var tu string
+//	if err := json.Unmarshal(data, &tu); err != nil {
+//		return err
+//	}
+//
+//	pu, err := url.Parse(tu)
+//	if err != nil {
+//		return err
+//	}
+//
+//	*u = Url(*pu)
+//	return nil
+//}
+//
+//func (u Url) MarshalJSON() ([]byte, error) {
+//	return []byte(`"` + u.String() + `"`), nil
+//}
+//
+//func (u Url) String() string {
+//	tu := url.URL(u)
+//	return (&tu).String()
+//}
+//
+//func (u Url) Validate() report.Report {
+//	// Empty url is valid, indicates an empty file
+//	if u.String() == "" {
+//		return report.Report{}
+//	}
+//	switch url.URL(u).Scheme {
+//	case "http", "https", "oem":
+//		return report.Report{}
+//	case "data":
+//		if _, err := dataurl.DecodeString(u.String()); err != nil {
+//			return report.ReportFromError(err, report.EntryError)
+//		}
+//		return report.Report{}
+//	default:
+//		return report.ReportFromError(ErrInvalidScheme, report.EntryError)
+//	}
+//}

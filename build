@@ -17,5 +17,8 @@ export GOBIN=${PWD}/bin/${GOARCH}
 export GOPATH=${PWD}/gopath
 export CGO_ENABLED=1
 
+echo "Generating schema..."
+go generate ${REPO_PATH}/schema
+
 echo "Building ${NAME}..."
 go build -ldflags "${GLDFLAGS}" -o ${GOBIN}/${NAME} ${REPO_PATH}/internal

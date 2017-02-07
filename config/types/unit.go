@@ -16,7 +16,6 @@ package types
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -25,82 +24,150 @@ import (
 	"github.com/coreos/ignition/config/validate/report"
 )
 
-type SystemdUnit struct {
-	Name     SystemdUnitName     `json:"name,omitempty"`
-	Enable   bool                `json:"enable,omitempty"`
-	Mask     bool                `json:"mask,omitempty"`
-	Contents string              `json:"contents,omitempty"`
-	DropIns  []SystemdUnitDropIn `json:"dropins,omitempty"`
-}
+func (u Unit) Validate() report.Report {
+	r := report.Report{}
 
-func (u SystemdUnit) Validate() report.Report {
 	if err := validateUnitContent(u.Contents); err != nil {
-		if err != errEmptyUnit || (err == errEmptyUnit && len(u.DropIns) == 0) {
-			return report.ReportFromError(err, report.EntryError)
+		if err != errEmptyUnit || (err == errEmptyUnit && len(u.Dropins) == 0) {
+			r.Add(report.Entry{
+				Message: err.Error(),
+				Kind:    report.EntryError,
+			})
 		}
 	}
 
-	return report.Report{}
-}
-
-type SystemdUnitDropIn struct {
-	Name     SystemdUnitDropInName `json:"name,omitempty"`
-	Contents string                `json:"contents,omitempty"`
-}
-
-func (u SystemdUnitDropIn) Validate() report.Report {
-	if err := validateUnitContent(u.Contents); err != nil {
-		return report.ReportFromError(err, report.EntryError)
-	}
-
-	return report.Report{}
-}
-
-type SystemdUnitName string
-
-func (n SystemdUnitName) Validate() report.Report {
-	switch filepath.Ext(string(n)) {
+	switch filepath.Ext(u.Name) {
 	case ".service", ".socket", ".device", ".mount", ".automount", ".swap", ".target", ".path", ".timer", ".snapshot", ".slice", ".scope":
-		return report.Report{}
 	default:
-		return report.ReportFromError(errors.New("invalid systemd unit extension"), report.EntryError)
+		r.Add(report.Entry{
+			Message: fmt.Sprintf("invalid systemd unit extension: %q", filepath.Ext(u.Name)),
+			Kind:    report.EntryError,
+		})
 	}
+
+	return r
 }
 
-type SystemdUnitDropInName string
+func (d Dropin) Validate() report.Report {
+	r := report.Report{}
 
-func (n SystemdUnitDropInName) Validate() report.Report {
-	switch filepath.Ext(string(n)) {
+	if err := validateUnitContent(d.Contents); err != nil {
+		r.Add(report.Entry{
+			Message: err.Error(),
+			Kind:    report.EntryError,
+		})
+	}
+
+	switch filepath.Ext(d.Name) {
 	case ".conf":
-		return report.Report{}
 	default:
-		return report.ReportFromError(errors.New("invalid systemd unit drop-in extension"), report.EntryError)
+		r.Add(report.Entry{
+			Message: fmt.Sprintf("invalid systemd unit drop-in extension: %q", filepath.Ext(d.Name)),
+			Kind:    report.EntryError,
+		})
 	}
+
+	return r
 }
 
-type NetworkdUnit struct {
-	Name     NetworkdUnitName `json:"name,omitempty"`
-	Contents string           `json:"contents,omitempty"`
-}
+func (u Networkdunit) Validate() report.Report {
+	r := report.Report{}
 
-func (u NetworkdUnit) Validate() report.Report {
 	if err := validateUnitContent(u.Contents); err != nil {
-		return report.ReportFromError(err, report.EntryError)
+		r.Add(report.Entry{
+			Message: err.Error(),
+			Kind:    report.EntryError,
+		})
 	}
 
-	return report.Report{}
-}
-
-type NetworkdUnitName string
-
-func (n NetworkdUnitName) Validate() report.Report {
-	switch filepath.Ext(string(n)) {
+	switch filepath.Ext(u.Name) {
 	case ".link", ".netdev", ".network":
-		return report.Report{}
 	default:
-		return report.ReportFromError(errors.New("invalid networkd unit extension"), report.EntryError)
+		r.Add(report.Entry{
+			Message: fmt.Sprintf("invalid networkd unit extension: %q", filepath.Ext(u.Name)),
+			Kind:    report.EntryError,
+		})
 	}
+
+	return r
 }
+
+//type SystemdUnit struct {
+//	Name     SystemdUnitName     `json:"name,omitempty"`
+//	Enable   bool                `json:"enable,omitempty"`
+//	Mask     bool                `json:"mask,omitempty"`
+//	Contents string              `json:"contents,omitempty"`
+//	DropIns  []SystemdUnitDropIn `json:"dropins,omitempty"`
+//}
+
+//func (u SystemdUnit) Validate() report.Report {
+//	if err := validateUnitContent(u.Contents); err != nil {
+//		if err != errEmptyUnit || (err == errEmptyUnit && len(u.DropIns) == 0) {
+//			return report.ReportFromError(err, report.EntryError)
+//		}
+//	}
+//
+//	return report.Report{}
+//}
+
+//type SystemdUnitDropIn struct {
+//	Name     SystemdUnitDropInName `json:"name,omitempty"`
+//	Contents string                `json:"contents,omitempty"`
+//}
+//
+//func (u SystemdUnitDropIn) Validate() report.Report {
+//	if err := validateUnitContent(u.Contents); err != nil {
+//		return report.ReportFromError(err, report.EntryError)
+//	}
+//
+//	return report.Report{}
+//}
+//
+//type SystemdUnitName string
+//
+//func (n SystemdUnitName) Validate() report.Report {
+//	switch filepath.Ext(string(n)) {
+//	case ".service", ".socket", ".device", ".mount", ".automount", ".swap", ".target", ".path", ".timer", ".snapshot", ".slice", ".scope":
+//		return report.Report{}
+//	default:
+//		return report.ReportFromError(errors.New("invalid systemd unit extension"), report.EntryError)
+//	}
+//}
+//
+//type SystemdUnitDropInName string
+//
+//func (n SystemdUnitDropInName) Validate() report.Report {
+//	switch filepath.Ext(string(n)) {
+//	case ".conf":
+//		return report.Report{}
+//	default:
+//		return report.ReportFromError(errors.New("invalid systemd unit drop-in extension"), report.EntryError)
+//	}
+//}
+
+//type NetworkdUnit struct {
+//	Name     NetworkdUnitName `json:"name,omitempty"`
+//	Contents string           `json:"contents,omitempty"`
+//}
+//
+//func (u NetworkdUnit) Validate() report.Report {
+//	if err := validateUnitContent(u.Contents); err != nil {
+//		return report.ReportFromError(err, report.EntryError)
+//	}
+//
+//	return report.Report{}
+//}
+//
+//type NetworkdUnitName string
+//
+//func (n NetworkdUnitName) Validate() report.Report {
+//	switch filepath.Ext(string(n)) {
+//	case ".link", ".netdev", ".network":
+//		return report.Report{}
+//	default:
+//		return report.ReportFromError(errors.New("invalid networkd unit extension"), report.EntryError)
+//	}
+//}
 
 var errEmptyUnit = fmt.Errorf("invalid or empty unit content")
 

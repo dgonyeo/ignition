@@ -14,23 +14,19 @@
 
 package types
 
-import (
-	"errors"
+//import (
+//	"errors"
+//
+//	"github.com/coreos/ignition/config/validate/report"
+//)
 
-	"github.com/coreos/ignition/config/validate/report"
-)
-
-var (
-	ErrCompressionInvalid = errors.New("invalid compression method")
-)
-
-type Compression string
-
-func (c Compression) Validate() report.Report {
-	switch c {
-	case "", "gzip":
-	default:
-		return report.ReportFromError(ErrCompressionInvalid, report.EntryError)
-	}
-	return report.Report{}
-}
+//type Compression string
+//
+//func (c Compression) Validate() report.Report {
+//	switch c {
+//	case "", "gzip":
+//	default:
+//		return report.ReportFromError(ErrCompressionInvalid, report.EntryError)
+//	}
+//	return report.Report{}
+//}

@@ -16,21 +16,28 @@ package types
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/coreos/ignition/config/validate/report"
 )
 
-type Disk struct {
-	Device     Path        `json:"device,omitempty"`
-	WipeTable  bool        `json:"wipeTable,omitempty"`
-	Partitions []Partition `json:"partitions,omitempty"`
-}
+//type Disk struct {
+//	Device     Path        `json:"device,omitempty"`
+//	WipeTable  bool        `json:"wipeTable,omitempty"`
+//	Partitions []Partition `json:"partitions,omitempty"`
+//}
 
 func (n Disk) Validate() report.Report {
 	r := report.Report{}
 	if len(n.Device) == 0 {
 		r.Add(report.Entry{
 			Message: "disk device is required",
+			Kind:    report.EntryError,
+		})
+	}
+	if !filepath.IsAbs(string(n.Device)) {
+		r.Add(report.Entry{
+			Message: fmt.Sprintf("disk %q: device path not absolute", n.Device),
 			Kind:    report.EntryError,
 		})
 	}
@@ -72,7 +79,7 @@ func (n Disk) partitionNumbersCollide() bool {
 }
 
 // end returns the last sector of a partition.
-func (p Partition) end() PartitionDimension {
+func (p Partition) end() int {
 	if p.Size == 0 {
 		// a size of 0 means "fill available", just return the start as the end for those.
 		return p.Start

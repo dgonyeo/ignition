@@ -14,6 +14,6 @@
 
 package types
 
-type Networkd struct {
-	Units []NetworkdUnit `json:"units,omitempty"`
-}
+//type Networkd struct {
+//	Units []NetworkdUnit `json:"units,omitempty"`
+//}

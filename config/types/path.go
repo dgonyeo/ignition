@@ -14,26 +14,26 @@
 
 package types
 
-import (
-	"errors"
-	"path/filepath"
+//import (
+//	"errors"
+//	"path/filepath"
+//
+//	"github.com/coreos/ignition/config/validate/report"
+//)
 
-	"github.com/coreos/ignition/config/validate/report"
-)
+//var (
+//	ErrPathRelative = errors.New("path not absolute")
+//)
 
-var (
-	ErrPathRelative = errors.New("path not absolute")
-)
+//type Path string
 
-type Path string
-
-func (p Path) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + string(p) + `"`), nil
-}
-
-func (p Path) Validate() report.Report {
-	if !filepath.IsAbs(string(p)) {
-		return report.ReportFromError(ErrPathRelative, report.EntryError)
-	}
-	return report.Report{}
-}
+//func (p Path) MarshalJSON() ([]byte, error) {
+//	return []byte(`"` + string(p) + `"`), nil
+//}
+//
+//func (p Path) Validate() report.Report {
+//	if !filepath.IsAbs(string(p)) {
+//		return report.ReportFromError(ErrPathRelative, report.EntryError)
+//	}
+//	return report.Report{}
+//}

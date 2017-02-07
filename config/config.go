@@ -27,6 +27,7 @@ import (
 	"github.com/coreos/ignition/config/validate/report"
 
 	json "github.com/ajeddeloh/go-json"
+	"github.com/coreos/go-semver/semver"
 	"go4.org/errorutil"
 )
 
@@ -42,14 +43,14 @@ var (
 // errors, warnings, info, and deprecations it encountered
 func Parse(rawConfig []byte) (types.Config, report.Report, error) {
 	switch version(rawConfig) {
-	case types.IgnitionVersion{Major: 1}:
+	case semver.Version{Major: 1}:
 		config, err := ParseFromV1(rawConfig)
 		if err != nil {
 			return types.Config{}, report.ReportFromError(err, report.EntryError), err
 		}
 
 		return config, report.ReportFromError(ErrDeprecated, report.EntryDeprecated), nil
-	case types.IgnitionVersion{Major: 2, Minor: 0}:
+	case semver.Version{Major: 2, Minor: 0}:
 		return ParseFromV2_0(rawConfig)
 	default:
 		return ParseFromLatest(rawConfig)
@@ -70,7 +71,7 @@ func ParseFromLatest(rawConfig []byte) (types.Config, report.Report, error) {
 
 	// These errors are fatal and the config should not be further validated
 	if err = json.Unmarshal(rawConfig, &config); err == nil {
-		versionReport := config.Ignition.Version.Validate()
+		versionReport := config.Ignition.Validate()
 		if versionReport.IsFatal() {
 			return types.Config{}, versionReport, ErrInvalid
 		}
@@ -151,7 +152,7 @@ func ParseFromV2_0(rawConfig []byte) (types.Config, report.Report, error) {
 	return TranslateFromV2_0(cfg), report, err
 }
 
-func version(rawConfig []byte) types.IgnitionVersion {
+func version(rawConfig []byte) semver.Version {
 	var composite struct {
 		Version  *int `json:"ignitionVersion"`
 		Ignition struct {
@@ -161,13 +162,16 @@ func version(rawConfig []byte) types.IgnitionVersion {
 
 	if json.Unmarshal(rawConfig, &composite) == nil {
 		if composite.Ignition.Version != nil {
-			return *composite.Ignition.Version
+			v, err := composite.Ignition.Version.Semver()
+			if err != nil {
+				return *v
+			}
 		} else if composite.Version != nil {
-			return types.IgnitionVersion{Major: int64(*composite.Version)}
+			return semver.Version{Major: int64(*composite.Version)}
 		}
 	}
 
-	return types.IgnitionVersion{}
+	return semver.Version{}
 }
 
 func isEmpty(userdata []byte) bool {

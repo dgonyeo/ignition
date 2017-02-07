@@ -14,7 +14,7 @@
 
 package types
 
-type Timeouts struct {
-	HttpResponseHeaders *int `json:"httpResponseHeaders,omitempty"`
-	HttpTotal           *int `json:"httpTotal,omitempty"`
-}
+//type Timeouts struct {
+//	HttpResponseHeaders *int `json:"httpResponseHeaders,omitempty"`
+//	HttpTotal           *int `json:"httpTotal,omitempty"`
+//}

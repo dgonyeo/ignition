@@ -16,6 +16,7 @@ package oem
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/coreos/ignition/config/types"
 	"github.com/coreos/ignition/internal/providers"
@@ -78,10 +79,10 @@ func init() {
 		fetch: digitalocean.FetchConfig,
 		baseConfig: types.Config{
 			Systemd: types.Systemd{
-				Units: []types.SystemdUnit{{Enable: true, Name: "coreos-metadata-sshkeys@.service"}},
+				Units: []types.Unit{{Enable: true, Name: "coreos-metadata-sshkeys@.service"}},
 			},
 		},
-		defaultUserConfig: types.Config{Systemd: types.Systemd{Units: []types.SystemdUnit{userCloudInit("DigitalOcean", "digitalocean")}}},
+		defaultUserConfig: types.Config{Systemd: types.Systemd{Units: []types.Unit{userCloudInit("DigitalOcean", "digitalocean")}}},
 	})
 	configs.Register(Config{
 		name:  "brightbox",
@@ -96,7 +97,7 @@ func init() {
 		fetch: ec2.FetchConfig,
 		baseConfig: types.Config{
 			Systemd: types.Systemd{
-				Units: []types.SystemdUnit{{Enable: true, Name: "coreos-metadata-sshkeys@.service"}},
+				Units: []types.Unit{{Enable: true, Name: "coreos-metadata-sshkeys@.service"}},
 			},
 		},
 	})
@@ -109,7 +110,7 @@ func init() {
 		fetch: gce.FetchConfig,
 		baseConfig: types.Config{
 			Systemd: types.Systemd{
-				Units: []types.SystemdUnit{
+				Units: []types.Unit{
 					{Enable: true, Name: "coreos-metadata-sshkeys@.service"},
 					{Enable: true, Name: "oem-gce.service"},
 				},
@@ -123,7 +124,9 @@ func init() {
 							Path:       "/etc/hosts",
 							Mode:       0444,
 						},
-						Contents: contentsFromString("169.254.169.254 metadata\n127.0.0.1 localhost\n"),
+						FileEmbedded1: types.FileEmbedded1{
+							Contents: contentsFromString("169.254.169.254 metadata\n127.0.0.1 localhost\n"),
+						},
 					},
 					{
 						Node: types.Node{
@@ -131,16 +134,18 @@ func init() {
 							Path:       "/etc/profile.d/google-cloud-sdk.sh",
 							Mode:       0444,
 						},
-						Contents: contentsFromString(`#!/bin/sh
+						FileEmbedded1: types.FileEmbedded1{
+							Contents: contentsFromString(`#!/bin/sh
 alias gcloud="(docker images google/cloud-sdk || docker pull google/cloud-sdk) > /dev/null;docker run -t -i --net="host" -v $HOME/.config:/.config -v /var/run/docker.sock:/var/run/doker.sock google/cloud-sdk gcloud"
 alias gcutil="(docker images google/cloud-sdk || docker pull google/cloud-sdk) > /dev/null;docker run -t -i --net="host" -v $HOME/.config:/.config google/cloud-sdk gcutil"
 alias gsutil="(docker images google/cloud-sdk || docker pull google/cloud-sdk) > /dev/null;docker run -t -i --net="host" -v $HOME/.config:/.config google/cloud-sdk gsutil"
 `),
+						},
 					},
 				},
 			},
 		},
-		defaultUserConfig: types.Config{Systemd: types.Systemd{Units: []types.SystemdUnit{userCloudInit("GCE", "gce")}}},
+		defaultUserConfig: types.Config{Systemd: types.Systemd{Units: []types.Unit{userCloudInit("GCE", "gce")}}},
 	})
 	configs.Register(Config{
 		name:  "hyperv",
@@ -155,7 +160,7 @@ alias gsutil="(docker images google/cloud-sdk || docker pull google/cloud-sdk) >
 		fetch: packet.FetchConfig,
 		baseConfig: types.Config{
 			Systemd: types.Systemd{
-				Units: []types.SystemdUnit{{Enable: true, Name: "coreos-metadata-sshkeys@.service"}},
+				Units: []types.Unit{{Enable: true, Name: "coreos-metadata-sshkeys@.service"}},
 			},
 		},
 	})
@@ -216,23 +221,23 @@ func Names() (names []string) {
 
 func contentsFromString(data string) types.FileContents {
 	return types.FileContents{
-		Source: types.Url{
+		Source: (&url.URL{
 			Scheme: "data",
 			Opaque: "," + dataurl.EscapeString(data),
-		},
+		}).String(),
 	}
 }
 
 func contentsFromOem(path string) types.FileContents {
 	return types.FileContents{
-		Source: types.Url{
+		Source: (&url.URL{
 			Scheme: "oem",
 			Path:   path,
-		},
+		}).String(),
 	}
 }
 
-func userCloudInit(name string, oem string) types.SystemdUnit {
+func userCloudInit(name string, oem string) types.Unit {
 	contents := `[Unit]
 Description=Cloudinit from %s metadata
 
@@ -244,7 +249,7 @@ ExecStart=/usr/bin/coreos-cloudinit --oem=%s
 WantedBy=multi-user.target
 `
 
-	return types.SystemdUnit{
+	return types.Unit{
 		Name:     "oem-cloudinit.service",
 		Enable:   true,
 		Contents: fmt.Sprintf(contents, name, oem),
@@ -255,9 +260,11 @@ func serviceFromOem(unit string) types.File {
 	return types.File{
 		Node: types.Node{
 			Filesystem: "root",
-			Path:       types.Path("/etc/systemd/system/" + unit),
+			Path:       "/etc/systemd/system/" + unit,
 			Mode:       0444,
 		},
-		Contents: contentsFromOem("/units/" + unit),
+		FileEmbedded1: types.FileEmbedded1{
+			Contents: contentsFromOem("/units/" + unit),
+		},
 	}
 }

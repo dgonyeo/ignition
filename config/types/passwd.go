@@ -14,7 +14,7 @@
 
 package types
 
-type Passwd struct {
-	Users  []User  `json:"users,omitempty"`
-	Groups []Group `json:"groups,omitempty"`
-}
+//type Passwd struct {
+//	Users  []User  `json:"users,omitempty"`
+//	Groups []Group `json:"groups,omitempty"`
+//}

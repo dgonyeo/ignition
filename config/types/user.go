@@ -14,22 +14,22 @@
 
 package types
 
-type User struct {
-	Name              string      `json:"name,omitempty"`
-	PasswordHash      string      `json:"passwordHash,omitempty"`
-	SSHAuthorizedKeys []string    `json:"sshAuthorizedKeys,omitempty"`
-	Create            *UserCreate `json:"create,omitempty"`
-}
-
-type UserCreate struct {
-	Uid          *uint    `json:"uid,omitempty"`
-	GECOS        string   `json:"gecos,omitempty"`
-	Homedir      string   `json:"homeDir,omitempty"`
-	NoCreateHome bool     `json:"noCreateHome,omitempty"`
-	PrimaryGroup string   `json:"primaryGroup,omitempty"`
-	Groups       []string `json:"groups,omitempty"`
-	NoUserGroup  bool     `json:"noUserGroup,omitempty"`
-	System       bool     `json:"system,omitempty"`
-	NoLogInit    bool     `json:"noLogInit,omitempty"`
-	Shell        string   `json:"shell,omitempty"`
-}
+//type User struct {
+//	Name              string      `json:"name,omitempty"`
+//	PasswordHash      string      `json:"passwordHash,omitempty"`
+//	SSHAuthorizedKeys []string    `json:"sshAuthorizedKeys,omitempty"`
+//	Create            *UserCreate `json:"create,omitempty"`
+//}
+//
+//type UserCreate struct {
+//	Uid          *uint    `json:"uid,omitempty"`
+//	GECOS        string   `json:"gecos,omitempty"`
+//	Homedir      string   `json:"homeDir,omitempty"`
+//	NoCreateHome bool     `json:"noCreateHome,omitempty"`
+//	PrimaryGroup string   `json:"primaryGroup,omitempty"`
+//	Groups       []string `json:"groups,omitempty"`
+//	NoUserGroup  bool     `json:"noUserGroup,omitempty"`
+//	System       bool     `json:"system,omitempty"`
+//	NoLogInit    bool     `json:"noLogInit,omitempty"`
+//	Shell        string   `json:"shell,omitempty"`
+//}
