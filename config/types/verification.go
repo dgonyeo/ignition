@@ -17,15 +17,18 @@ package types
 import (
 	"crypto"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/coreos/ignition/config/validate/report"
 )
 
-//type Verification struct {
-//	Hash *Hash `json:"hash,omitempty"`
-//}
+var (
+	ErrHashMalformed    = errors.New("malformed hash specifier")
+	ErrHashWrongSize    = errors.New("incorrect size for hash sum")
+	ErrHashUnrecognized = errors.New("unrecognized hash function")
+)
 
 // HashParts will return the sum and function (in that order) of the hash stored
 // in this Verification, or an error if there is an issue during parsing.

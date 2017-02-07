@@ -28,23 +28,6 @@ var (
 	ErrFilesystemMountAndPath  = errors.New("filesystem has both mount and path defined")
 )
 
-//type Filesystem struct {
-//	Name  string           `json:"name,omitempty"`
-//	Mount *FilesystemMount `json:"mount,omitempty"`
-//	Path  *Path            `json:"path,omitempty"`
-//}
-//
-//type FilesystemMount struct {
-//	Device Path              `json:"device,omitempty"`
-//	Format FilesystemFormat  `json:"format,omitempty"`
-//	Create *FilesystemCreate `json:"create,omitempty"`
-//}
-//
-//type FilesystemCreate struct {
-//	Force   bool        `json:"force,omitempty"`
-//	Options MkfsOptions `json:"options,omitempty"`
-//}
-
 func (f Filesystem) Validate() report.Report {
 	r := report.Report{}
 	if f.Mount == nil && f.Path == nil {
@@ -70,16 +53,3 @@ func (m Mount) Validate() report.Report {
 		return report.ReportFromError(ErrFilesystemInvalidFormat, report.EntryError)
 	}
 }
-
-//type FilesystemFormat string
-//
-//func (f FilesystemFormat) Validate() report.Report {
-//	switch f {
-//	case "ext4", "btrfs", "xfs":
-//		return report.Report{}
-//	default:
-//		return report.ReportFromError(ErrFilesystemInvalidFormat, report.EntryError)
-//	}
-//}
-
-//type MkfsOptions []string

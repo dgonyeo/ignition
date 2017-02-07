@@ -26,23 +26,6 @@ var (
 	ErrFileIllegalMode = errors.New("illegal file mode")
 )
 
-// Node represents all common info for files (special types, e.g. directories, included).
-//type Node struct {
-//	Filesystem string    `json:"filesystem,omitempty"`
-//	Path       Path      `json:"path,omitempty"`
-//	Mode       NodeMode  `json:"mode,omitempty"`
-//	User       NodeUser  `json:"user,omitempty"`
-//	Group      NodeGroup `json:"group,omitempty"`
-//}
-
-//type NodeUser struct {
-//	Id int `json:"id,omitempty"`
-//}
-//
-//type NodeGroup struct {
-//	Id int `json:"id,omitempty"`
-//}
-
 func (n Node) Validate() report.Report {
 	r := report.Report{}
 	if n.Filesystem == "" {
@@ -67,12 +50,3 @@ func (n Node) Depth() int {
 	}
 	return count
 }
-
-//type NodeMode os.FileMode
-//
-//func (m NodeMode) Validate() report.Report {
-//	if (m &^ 07777) != 0 {
-//		return report.ReportFromError(ErrFileIllegalMode, report.EntryError)
-//	}
-//	return report.Report{}
-//}

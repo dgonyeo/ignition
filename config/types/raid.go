@@ -21,13 +21,6 @@ import (
 	"github.com/coreos/ignition/config/validate/report"
 )
 
-//type Raid struct {
-//	Name    string `json:"name"`
-//	Level   string `json:"level"`
-//	Devices []Path `json:"devices,omitempty"`
-//	Spares  int    `json:"spares,omitempty"`
-//}
-
 func (n Raid) Validate() report.Report {
 	r := report.Report{}
 	switch n.Level {

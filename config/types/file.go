@@ -28,18 +28,6 @@ var (
 	ErrCompressionInvalid = errors.New("invalid compression method")
 )
 
-// File represents regular files
-//type File struct {
-//	Node
-//	Contents FileContents `json:"contents,omitempty"`
-//}
-
-//type FileContents struct {
-//	Compression  Compression  `json:"compression,omitempty"`
-//	Source       Url          `json:"source,omitempty"`
-//	Verification Verification `json:"verification,omitempty"`
-//}
-
 func (fc FileContents) Validate() report.Report {
 	r := report.Report{}
 	switch fc.Compression {
@@ -76,54 +64,3 @@ func (fc FileContents) Validate() report.Report {
 	}
 	return r
 }
-
-//func (c Compression) Validate() report.Report {
-//	switch c {
-//	case "", "gzip":
-//	default:
-//		return report.ReportFromError(ErrCompressionInvalid, report.EntryError)
-//	}
-//	return report.Report{}
-//}
-
-//func (u *Url) UnmarshalJSON(data []byte) error {
-//	var tu string
-//	if err := json.Unmarshal(data, &tu); err != nil {
-//		return err
-//	}
-//
-//	pu, err := url.Parse(tu)
-//	if err != nil {
-//		return err
-//	}
-//
-//	*u = Url(*pu)
-//	return nil
-//}
-
-//func (u Url) MarshalJSON() ([]byte, error) {
-//	return []byte(`"` + u.String() + `"`), nil
-//}
-
-//func (u Url) String() string {
-//	tu := url.URL(u)
-//	return (&tu).String()
-//}
-
-//func (u Url) Validate() report.Report {
-//	// Empty url is valid, indicates an empty file
-//	if u.String() == "" {
-//		return report.Report{}
-//	}
-//	switch url.URL(u).Scheme {
-//	case "http", "https", "oem":
-//		return report.Report{}
-//	case "data":
-//		if _, err := dataurl.DecodeString(u.String()); err != nil {
-//			return report.ReportFromError(err, report.EntryError)
-//		}
-//		return report.Report{}
-//	default:
-//		return report.ReportFromError(ErrInvalidScheme, report.EntryError)
-//	}
-//}

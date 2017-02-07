@@ -21,12 +21,6 @@ import (
 	"github.com/coreos/ignition/config/validate/report"
 )
 
-//type Disk struct {
-//	Device     Path        `json:"device,omitempty"`
-//	WipeTable  bool        `json:"wipeTable,omitempty"`
-//	Partitions []Partition `json:"partitions,omitempty"`
-//}
-
 func (n Disk) Validate() report.Report {
 	r := report.Report{}
 	if len(n.Device) == 0 {
