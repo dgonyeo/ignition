@@ -16,31 +16,34 @@ package types
 
 import (
 	"errors"
-	"fmt"
+	"net/url"
 
-	"github.com/coreos/ignition/config/validate/report"
+	"github.com/vincent-petithory/dataurl"
 )
 
 var (
-	ErrCompressionInvalid = errors.New("invalid compression method")
+	ErrInvalidScheme = errors.New("invalid url scheme")
 )
 
-func (fc FileContents) Validate() report.Report {
-	r := report.Report{}
-	switch fc.Compression {
-	case "", "gzip":
-	default:
-		r.Add(report.Entry{
-			Message: ErrCompressionInvalid.Error(),
-			Kind:    report.EntryError,
-		})
+func validateURL(s string) error {
+	// Empty url is valid, indicates an empty file
+	if s == "" {
+		return nil
 	}
-	err := validateURL(fc.Source)
+	u, err := url.Parse(s)
 	if err != nil {
-		r.Add(report.Entry{
-			Message: fmt.Sprintf("invalid url: %q: ", fc.Source, err.Error()),
-			Kind:    report.EntryError,
-		})
+		return err
 	}
-	return r
+
+	switch u.Scheme {
+	case "http", "https", "oem":
+		return nil
+	case "data":
+		if _, err := dataurl.DecodeString(s); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return ErrInvalidScheme
+	}
 }

@@ -17,7 +17,6 @@ package types
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 
 	"github.com/coreos/ignition/config/validate/report"
 )
@@ -36,7 +35,7 @@ func (f Filesystem) Validate() report.Report {
 	if f.Mount != nil && f.Path != nil {
 		return report.ReportFromError(ErrFilesystemMountAndPath, report.EntryError)
 	}
-	if f.Path != nil && !filepath.IsAbs(*f.Path) {
+	if f.Path != nil && validatePath(*f.Path) != nil {
 		r.Add(report.Entry{
 			Message: fmt.Sprintf("filesystem %q: path not absolute", f.Name),
 			Kind:    report.EntryError,
@@ -46,10 +45,20 @@ func (f Filesystem) Validate() report.Report {
 }
 
 func (m Mount) Validate() report.Report {
+	r := report.Report{}
 	switch m.Format {
 	case "ext4", "btrfs", "xfs":
-		return report.Report{}
 	default:
-		return report.ReportFromError(ErrFilesystemInvalidFormat, report.EntryError)
+		r.Add(report.Entry{
+			Message: ErrFilesystemInvalidFormat.Error(),
+			Kind:    report.EntryError,
+		})
 	}
+	if err := validatePath(m.Device); err != nil {
+		r.Add(report.Entry{
+			Message: err.Error(),
+			Kind:    report.EntryError,
+		})
+	}
+	return r
 }

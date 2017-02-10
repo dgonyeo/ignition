@@ -40,6 +40,12 @@ func (n Node) Validate() report.Report {
 			Kind:    report.EntryError,
 		})
 	}
+	if err := validatePath(n.Path); err != nil {
+		r.Add(report.Entry{
+			Message: err.Error(),
+			Kind:    report.EntryError,
+		})
+	}
 	return report.Report{}
 }
 

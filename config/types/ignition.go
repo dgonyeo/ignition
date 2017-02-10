@@ -27,6 +27,18 @@ var (
 	ErrNewVersion = errors.New("incorrect config version (too new)")
 )
 
+func (c ConfigReference) Validate() report.Report {
+	r := report.Report{}
+	err := validateURL(c.Source)
+	if err != nil {
+		r.Add(report.Entry{
+			Message: err.Error(),
+			Kind:    report.EntryError,
+		})
+	}
+	return r
+}
+
 func (v IgnitionVersion) Semver() (*semver.Version, error) {
 	return semver.NewVersion(v.Version)
 }

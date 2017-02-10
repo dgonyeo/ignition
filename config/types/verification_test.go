@@ -15,7 +15,6 @@
 package types
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -27,8 +26,7 @@ func TestHashUnmarshalJSON(t *testing.T) {
 		data string
 	}
 	type out struct {
-		hash Hash
-		err  error
+		err error
 	}
 
 	tests := []struct {
@@ -36,30 +34,27 @@ func TestHashUnmarshalJSON(t *testing.T) {
 		out out
 	}{
 		{
-			in:  in{data: `"sha512-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"`},
-			out: out{hash: Hash{Function: "sha512", Sum: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}},
+			in: in{data: `"sha512-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"`},
 		},
 		{
-			in:  in{data: `"xor01234567"`},
+			in:  in{data: `"xor-01234567"`},
 			out: out{err: ErrHashMalformed},
 		},
 	}
 
 	for i, test := range tests {
-		var hash Hash
-		err := json.Unmarshal([]byte(test.in.data), &hash)
-		if !reflect.DeepEqual(test.out.err, err) {
-			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, err)
+		fun, sum, err := Verification{Hash: &test.in.data}.HashParts()
+		if fun+"-"+sum != test.in.data {
 		}
-		if !reflect.DeepEqual(test.out.hash, hash) {
-			t.Errorf("#%d: bad hash: want %+v, got %+v", i, test.out.hash, hash)
+		if err != test.out.err {
+			t.Errorf("#%d: bad hash: want %+v, got %+v", i, test.in.data, fun+"-"+sum)
 		}
 	}
 }
 
 func TestHashValidate(t *testing.T) {
 	type in struct {
-		hash Hash
+		v Verification
 	}
 	type out struct {
 		err error
@@ -70,25 +65,25 @@ func TestHashValidate(t *testing.T) {
 		out out
 	}{
 		{
-			in:  in{hash: Hash{}},
+			in:  in{v: Verification{}},
 			out: out{err: ErrHashUnrecognized},
 		},
 		{
-			in:  in{hash: Hash{Function: "xor"}},
+			in:  in{v: Verification{Hash: func(s string) *string { return &s }("xor-abcdef")}},
 			out: out{err: ErrHashUnrecognized},
 		},
 		{
-			in:  in{hash: Hash{Function: "sha512", Sum: "123"}},
+			in:  in{v: Verification{Hash: func(s string) *string { return &s }("sha512-123")}},
 			out: out{err: ErrHashWrongSize},
 		},
 		{
-			in:  in{hash: Hash{Function: "sha512", Sum: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}},
+			in:  in{v: Verification{Hash: func(s string) *string { return &s }("sha512-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")}},
 			out: out{},
 		},
 	}
 
 	for i, test := range tests {
-		err := test.in.hash.Validate()
+		err := test.in.v.Validate()
 		if !reflect.DeepEqual(report.ReportFromError(test.out.err, report.EntryError), err) {
 			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, err)
 		}

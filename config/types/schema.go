@@ -147,8 +147,8 @@ type Systemd struct {
 }
 
 type Timeouts struct {
-	HTTPResponseHeaders int `json:"httpResponseHeaders,omitempty"`
-	HTTPTotal           int `json:"httpTotal,omitempty"`
+	HTTPResponseHeaders *int `json:"httpResponseHeaders,omitempty"`
+	HTTPTotal           *int `json:"httpTotal,omitempty"`
 }
 
 type Unit struct {

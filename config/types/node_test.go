@@ -53,7 +53,7 @@ func TestNodeValidate(t *testing.T) {
 
 func TestNodeModeValidate(t *testing.T) {
 	type in struct {
-		mode NodeMode
+		mode int
 	}
 	type out struct {
 		report report.Report
@@ -64,29 +64,29 @@ func TestNodeModeValidate(t *testing.T) {
 		out out
 	}{
 		{
-			in:  in{mode: NodeMode(0)},
+			in:  in{mode: 0},
 			out: out{},
 		},
 		{
-			in:  in{mode: NodeMode(0644)},
+			in:  in{mode: 0644},
 			out: out{},
 		},
 		{
-			in:  in{mode: NodeMode(01755)},
+			in:  in{mode: 01755},
 			out: out{},
 		},
 		{
-			in:  in{mode: NodeMode(07777)},
+			in:  in{mode: 07777},
 			out: out{},
 		},
 		{
-			in:  in{mode: NodeMode(010000)},
+			in:  in{mode: 010000},
 			out: out{report: report.ReportFromError(ErrFileIllegalMode, report.EntryError)},
 		},
 	}
 
 	for i, test := range tests {
-		report := test.in.mode.Validate()
+		report := Node{Mode: test.in.mode}.Validate()
 		if !reflect.DeepEqual(test.out.report, report) {
 			t.Errorf("#%d: bad report: want %v, got %v", i, test.out.report, report)
 		}

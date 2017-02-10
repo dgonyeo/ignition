@@ -15,7 +15,6 @@
 package types
 
 import (
-	"net/url"
 	"reflect"
 	"testing"
 
@@ -61,13 +60,9 @@ func TestURLValidate(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		u, err := url.Parse(test.in.u)
-		if err != nil {
-			t.Errorf("URL failed to parse. This is an error with the test")
-		}
-		r := Url(*u).Validate()
-		if !reflect.DeepEqual(report.ReportFromError(test.out.err, report.EntryError), r) {
-			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, r)
+		err := validateURL(test.in.u)
+		if !reflect.DeepEqual(report.ReportFromError(test.out.err, report.EntryError), err) {
+			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, err)
 		}
 	}
 }

@@ -16,31 +16,16 @@ package types
 
 import (
 	"errors"
-	"fmt"
-
-	"github.com/coreos/ignition/config/validate/report"
+	"path/filepath"
 )
 
 var (
-	ErrCompressionInvalid = errors.New("invalid compression method")
+	ErrPathRelative = errors.New("path not absolute")
 )
 
-func (fc FileContents) Validate() report.Report {
-	r := report.Report{}
-	switch fc.Compression {
-	case "", "gzip":
-	default:
-		r.Add(report.Entry{
-			Message: ErrCompressionInvalid.Error(),
-			Kind:    report.EntryError,
-		})
+func validatePath(path string) error {
+	if !filepath.IsAbs(path) {
+		return ErrPathRelative
 	}
-	err := validateURL(fc.Source)
-	if err != nil {
-		r.Add(report.Entry{
-			Message: fmt.Sprintf("invalid url: %q: ", fc.Source, err.Error()),
-			Kind:    report.EntryError,
-		})
-	}
-	return r
+	return nil
 }

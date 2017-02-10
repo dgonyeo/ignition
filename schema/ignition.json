@@ -72,10 +72,10 @@
           "type": "object",
           "properties": {
             "httpResponseHeaders": {
-              "type": "integer"
+              "type": ["integer", "null"]
             },
             "httpTotal": {
-              "type": "integer"
+              "type": ["integer", "null"]
             }
           }
         }

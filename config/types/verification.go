@@ -61,7 +61,7 @@ func (v Verification) Validate() report.Report {
 		hash = crypto.SHA512
 	default:
 		r.Add(report.Entry{
-			Message: fmt.Sprintf("unrecognized hash function: %q", function),
+			Message: ErrHashUnrecognized.Error(),
 			Kind:    report.EntryError,
 		})
 		return r

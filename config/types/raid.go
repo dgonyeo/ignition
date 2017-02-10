@@ -16,7 +16,6 @@ package types
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/coreos/ignition/config/validate/report"
 )
@@ -43,7 +42,7 @@ func (n Raid) Validate() report.Report {
 		})
 	}
 	for d := range n.Devices {
-		if !filepath.IsAbs(string(d)) {
+		if err := validatePath(string(d)); err != nil {
 			r.Add(report.Entry{
 				Message: fmt.Sprintf("array %q: device path not absolute: %q", n.Name, d),
 				Kind:    report.EntryError,
