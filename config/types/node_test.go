@@ -34,11 +34,11 @@ func TestNodeValidate(t *testing.T) {
 		out out
 	}{
 		{
-			in:  in{node: Node{}},
+			in:  in{node: Node{Path: "/"}},
 			out: out{report: report.ReportFromError(ErrNoFilesystem, report.EntryError)},
 		},
 		{
-			in:  in{node: Node{Filesystem: "foo"}},
+			in:  in{node: Node{Filesystem: "foo", Path: "/"}},
 			out: out{},
 		},
 	}
@@ -86,7 +86,7 @@ func TestNodeModeValidate(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		report := Node{Mode: test.in.mode}.Validate()
+		report := Node{Filesystem: "foo", Path: "/", Mode: test.in.mode}.Validate()
 		if !reflect.DeepEqual(test.out.report, report) {
 			t.Errorf("#%d: bad report: want %v, got %v", i, test.out.report, report)
 		}

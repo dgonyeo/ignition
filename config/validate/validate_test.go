@@ -19,6 +19,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/coreos/go-semver/semver"
+
 	// Import into the same namespace to keep config definitions clean
 	. "github.com/coreos/ignition/config/types"
 	"github.com/coreos/ignition/config/validate/report"
@@ -37,7 +39,7 @@ func TestValidate(t *testing.T) {
 		out out
 	}{
 		{
-			in:  in{cfg: Config{Ignition: Ignition{Version: IgnitionVersion{Major: 2}}}},
+			in:  in{cfg: Config{Ignition: IgnitionVersion{Version: semver.Version{Major: 2}.String()}}},
 			out: out{},
 		},
 		{
@@ -46,12 +48,12 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			in: in{cfg: Config{
-				Ignition: Ignition{
-					Version: IgnitionVersion{Major: 2},
+				Ignition: IgnitionVersion{
+					Version: semver.Version{Major: 2}.String(),
 					Config: IgnitionConfig{
 						Replace: &ConfigReference{
 							Verification: Verification{
-								Hash: &Hash{Function: "foobar"},
+								Hash: func(s string) *string { return &s }("foobar-"),
 							},
 						},
 					},
@@ -61,14 +63,14 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			in: in{cfg: Config{
-				Ignition: Ignition{Version: IgnitionVersion{Major: 2}},
+				Ignition: IgnitionVersion{Version: semver.Version{Major: 2}.String()},
 				Storage: Storage{
 					Filesystems: []Filesystem{
 						{
 							Name: "filesystem1",
-							Mount: &FilesystemMount{
-								Device: Path("/dev/disk/by-partlabel/ROOT"),
-								Format: FilesystemFormat("btrfs"),
+							Mount: &Mount{
+								Device: "/dev/disk/by-partlabel/ROOT",
+								Format: "btrfs",
 							},
 						},
 					},
@@ -78,12 +80,12 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			in: in{cfg: Config{
-				Ignition: Ignition{Version: IgnitionVersion{Major: 2}},
+				Ignition: IgnitionVersion{Version: semver.Version{Major: 2}.String()},
 				Storage: Storage{
 					Filesystems: []Filesystem{
 						{
 							Name: "filesystem1",
-							Path: func(p Path) *Path { return &p }("/sysroot"),
+							Path: func(p string) *string { return &p }("/sysroot"),
 						},
 					},
 				},
@@ -92,14 +94,14 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			in: in{cfg: Config{
-				Ignition: Ignition{Version: IgnitionVersion{Major: 2}},
-				Systemd:  Systemd{Units: []SystemdUnit{{Name: "foo.bar", Contents: "[Foo]\nfoo=qux"}}},
+				Ignition: IgnitionVersion{Version: semver.Version{Major: 2}.String()},
+				Systemd:  Systemd{Units: []Unit{{Name: "foo.bar", Contents: "[Foo]\nfoo=qux"}}},
 			}},
 			out: out{err: errors.New("invalid systemd unit extension")},
 		},
 		{
 			in: in{cfg: Config{
-				Ignition: Ignition{Version: IgnitionVersion{Major: 2}},
+				Ignition: IgnitionVersion{Version: semver.Version{Major: 2}.String()},
 				Networkd: Networkd{Units: []NetworkdUnit{{Name: "foo.link", Contents: ""}}},
 			}},
 			out: out{err: errors.New("invalid or empty unit content")},

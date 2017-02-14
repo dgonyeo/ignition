@@ -35,19 +35,19 @@ func TestSystemdUnitValidate(t *testing.T) {
 		out out
 	}{
 		{
-			in:  in{unit: Unit{Contents: "[Foo]\nQux=Bar"}},
+			in:  in{unit: Unit{Name: "test.service", Contents: "[Foo]\nQux=Bar"}},
 			out: out{err: nil},
 		},
 		{
-			in:  in{unit: Unit{Contents: "[Foo"}},
+			in:  in{unit: Unit{Name: "test.service", Contents: "[Foo"}},
 			out: out{err: errors.New("invalid unit content: unable to find end of section")},
 		},
 		{
-			in:  in{unit: Unit{Contents: ""}},
+			in:  in{unit: Unit{Name: "test.service", Contents: ""}},
 			out: out{err: errors.New("invalid or empty unit content")},
 		},
 		{
-			in:  in{unit: Unit{Contents: "", Dropins: []Dropin{{}}}},
+			in:  in{unit: Unit{Name: "test.service", Contents: "", Dropins: []Dropin{{}}}},
 			out: out{err: nil},
 		},
 	}
@@ -82,12 +82,12 @@ func TestSystemdUnitNameValidate(t *testing.T) {
 		},
 		{
 			in:  in{unit: "test.blah"},
-			out: out{err: errors.New("invalid systemd unit extension")},
+			out: out{err: ErrInvalidSystemdExt},
 		},
 	}
 
 	for i, test := range tests {
-		err := Unit{Name: test.in.unit}.Validate()
+		err := Unit{Name: test.in.unit, Contents: "[Foo]\nQux=Bar"}.Validate()
 		if !reflect.DeepEqual(report.ReportFromError(test.out.err, report.EntryError), err) {
 			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, err)
 		}
@@ -107,15 +107,15 @@ func TestSystemdUnitDropInValidate(t *testing.T) {
 		out out
 	}{
 		{
-			in:  in{unit: Dropin{Contents: "[Foo]\nQux=Bar"}},
+			in:  in{unit: Dropin{Name: "test.conf", Contents: "[Foo]\nQux=Bar"}},
 			out: out{err: nil},
 		},
 		{
-			in:  in{unit: Dropin{Contents: "[Foo"}},
+			in:  in{unit: Dropin{Name: "test.conf", Contents: "[Foo"}},
 			out: out{err: errors.New("invalid unit content: unable to find end of section")},
 		},
 		{
-			in:  in{unit: Dropin{Contents: ""}},
+			in:  in{unit: Dropin{Name: "test.conf", Contents: ""}},
 			out: out{err: errors.New("invalid or empty unit content")},
 		},
 	}
@@ -154,12 +154,12 @@ func TestNetworkdUnitNameValidate(t *testing.T) {
 		},
 		{
 			in:  in{unit: "test.blah"},
-			out: out{err: errors.New("invalid networkd unit extension")},
+			out: out{err: ErrInvalidNetworkdExt},
 		},
 	}
 
 	for i, test := range tests {
-		err := Networkdunit{Name: test.in.unit}.Validate()
+		err := Networkdunit{Name: test.in.unit, Contents: "[Foo]\nQux=Bar"}.Validate()
 		if !reflect.DeepEqual(report.ReportFromError(test.out.err, report.EntryError), err) {
 			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, err)
 		}
@@ -179,15 +179,15 @@ func TestNetworkdUnitValidate(t *testing.T) {
 		out out
 	}{
 		{
-			in:  in{unit: Networkdunit{Contents: "[Foo]\nQux=Bar"}},
+			in:  in{unit: Networkdunit{Name: "test.network", Contents: "[Foo]\nQux=Bar"}},
 			out: out{err: nil},
 		},
 		{
-			in:  in{unit: Networkdunit{Contents: "[Foo"}},
+			in:  in{unit: Networkdunit{Name: "test.network", Contents: "[Foo"}},
 			out: out{err: errors.New("invalid unit content: unable to find end of section")},
 		},
 		{
-			in:  in{unit: Networkdunit{Contents: ""}},
+			in:  in{unit: Networkdunit{Name: "test.network", Contents: ""}},
 			out: out{err: errors.New("invalid or empty unit content")},
 		},
 	}

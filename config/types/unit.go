@@ -16,12 +16,18 @@ package types
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"path/filepath"
 
 	"github.com/coreos/go-systemd/unit"
 
 	"github.com/coreos/ignition/config/validate/report"
+)
+
+var (
+	ErrInvalidSystemdExt  = errors.New("invalid systemd unit extension")
+	ErrInvalidNetworkdExt = errors.New("invalid networkd unit extension")
 )
 
 func (u Unit) Validate() report.Report {
@@ -40,7 +46,7 @@ func (u Unit) Validate() report.Report {
 	case ".service", ".socket", ".device", ".mount", ".automount", ".swap", ".target", ".path", ".timer", ".snapshot", ".slice", ".scope":
 	default:
 		r.Add(report.Entry{
-			Message: fmt.Sprintf("invalid systemd unit extension: %q", filepath.Ext(u.Name)),
+			Message: ErrInvalidSystemdExt.Error(),
 			Kind:    report.EntryError,
 		})
 	}
@@ -84,7 +90,7 @@ func (u Networkdunit) Validate() report.Report {
 	case ".link", ".netdev", ".network":
 	default:
 		r.Add(report.Entry{
-			Message: fmt.Sprintf("invalid networkd unit extension: %q", filepath.Ext(u.Name)),
+			Message: ErrInvalidNetworkdExt.Error(),
 			Kind:    report.EntryError,
 		})
 	}

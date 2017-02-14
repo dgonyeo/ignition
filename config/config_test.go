@@ -38,7 +38,7 @@ func TestParse(t *testing.T) {
 	}{
 		{
 			in:  in{config: []byte(`{"ignitionVersion": 1}`)},
-			out: out{config: types.Config{Ignition: types.Ignition{Version: types.IgnitionVersion(v2_0.MaxVersion)}}},
+			out: out{config: types.Config{Ignition: types.IgnitionVersion{Version: v2_0.MaxVersion.String()}}},
 		},
 		{
 			in:  in{config: []byte(`{"ignition": {"version": "1.0.0"}}`)},
@@ -46,11 +46,11 @@ func TestParse(t *testing.T) {
 		},
 		{
 			in:  in{config: []byte(`{"ignition": {"version": "2.0.0"}}`)},
-			out: out{config: types.Config{Ignition: types.Ignition{Version: types.IgnitionVersion(types.MaxVersion)}}},
+			out: out{config: types.Config{Ignition: types.IgnitionVersion{Version: types.MaxVersion.String()}}},
 		},
 		{
 			in:  in{config: []byte(`{"ignition": {"version": "2.1.0-experimental"}}`)},
-			out: out{config: types.Config{Ignition: types.Ignition{Version: types.IgnitionVersion(types.MaxVersion)}}},
+			out: out{config: types.Config{Ignition: types.IgnitionVersion{Version: types.MaxVersion.String()}}},
 		},
 		{
 			in:  in{config: []byte(`{"ignition": {"version": "2.1.0"}}`)},
@@ -96,12 +96,12 @@ func TestParse(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		config, _, err := Parse(test.in.config)
+		config, report, err := Parse(test.in.config)
 		if test.out.err != err {
-			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, err)
+			t.Errorf("#%d: bad error: want %v, got %v, report: %+v", i, test.out.err, err, report)
 		}
 		if test.out.err == nil && !reflect.DeepEqual(test.out.config, config) {
-			t.Errorf("#%d: bad config: want %+v, got %+v", i, test.out.config, config)
+			t.Errorf("#%d: bad config: want %+v, got %+v, report: %+v", i, test.out.config, config, report)
 		}
 	}
 }

@@ -138,11 +138,15 @@ func TranslateFromV1(old v1.Config) types.Config {
 			SSHAuthorizedKeys: translateStringSliceToV2_1SSHAuthorizedKeySlice(oldUser.SSHAuthorizedKeys),
 		}
 
-		uid := int(*oldUser.Create.Uid)
-
 		if oldUser.Create != nil {
+			var uid *int
+			if oldUser.Create.Uid != nil {
+				tmp := int(*oldUser.Create.Uid)
+				uid = &tmp
+			}
+
 			user.Create = &types.Usercreate{
-				UID:          &uid,
+				UID:          uid,
 				Gecos:        oldUser.Create.GECOS,
 				HomeDir:      oldUser.Create.Homedir,
 				NoCreateHome: oldUser.Create.NoCreateHome,
@@ -159,10 +163,14 @@ func TranslateFromV1(old v1.Config) types.Config {
 	}
 
 	for _, oldGroup := range old.Passwd.Groups {
-		gid := int(*oldGroup.Gid)
+		var gid *int
+		if oldGroup.Gid != nil {
+			tmp := int(*oldGroup.Gid)
+			gid = &tmp
+		}
 		config.Passwd.Groups = append(config.Passwd.Groups, types.PasswdGroup{
 			Name:         oldGroup.Name,
-			Gid:          &gid,
+			Gid:          gid,
 			PasswordHash: oldGroup.PasswordHash,
 			System:       oldGroup.System,
 		})

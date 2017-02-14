@@ -21,7 +21,7 @@ import (
 	"github.com/coreos/ignition/config/validate/report"
 )
 
-func TestHashUnmarshalJSON(t *testing.T) {
+func TestHashParts(t *testing.T) {
 	type in struct {
 		data string
 	}
@@ -37,17 +37,18 @@ func TestHashUnmarshalJSON(t *testing.T) {
 			in: in{data: `"sha512-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"`},
 		},
 		{
-			in:  in{data: `"xor-01234567"`},
+			in:  in{data: `"sha512:01234567"`},
 			out: out{err: ErrHashMalformed},
 		},
 	}
 
 	for i, test := range tests {
 		fun, sum, err := Verification{Hash: &test.in.data}.HashParts()
-		if fun+"-"+sum != test.in.data {
-		}
 		if err != test.out.err {
-			t.Errorf("#%d: bad hash: want %+v, got %+v", i, test.in.data, fun+"-"+sum)
+			t.Fatalf("#%d: bad error: want %+v, got %+v", i, test.out.err, err)
+		}
+		if err == nil && fun+"-"+sum != test.in.data {
+			t.Fatalf("#%d: bad hash: want %+v, got %+v", i, test.in.data, fun+"-"+sum)
 		}
 	}
 }
@@ -60,24 +61,28 @@ func TestHashValidate(t *testing.T) {
 		err error
 	}
 
+	h1 := "xor-abcdef"
+	h2 := "sha512-123"
+	h3 := "sha512-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
 	tests := []struct {
 		in  in
 		out out
 	}{
 		{
 			in:  in{v: Verification{}},
+			out: out{err: ErrHashIsNull},
+		},
+		{
+			in:  in{v: Verification{Hash: &h1}},
 			out: out{err: ErrHashUnrecognized},
 		},
 		{
-			in:  in{v: Verification{Hash: func(s string) *string { return &s }("xor-abcdef")}},
-			out: out{err: ErrHashUnrecognized},
-		},
-		{
-			in:  in{v: Verification{Hash: func(s string) *string { return &s }("sha512-123")}},
+			in:  in{v: Verification{Hash: &h2}},
 			out: out{err: ErrHashWrongSize},
 		},
 		{
-			in:  in{v: Verification{Hash: func(s string) *string { return &s }("sha512-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")}},
+			in:  in{v: Verification{Hash: &h3}},
 			out: out{},
 		},
 	}

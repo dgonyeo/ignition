@@ -17,8 +17,6 @@ package types
 import (
 	"reflect"
 	"testing"
-
-	"github.com/coreos/ignition/config/validate/report"
 )
 
 func TestPathValidate(t *testing.T) {
@@ -57,7 +55,7 @@ func TestPathValidate(t *testing.T) {
 
 	for i, test := range tests {
 		err := validatePath(test.in.device)
-		if !reflect.DeepEqual(report.ReportFromError(test.out.err, report.EntryError), err) {
+		if !reflect.DeepEqual(test.out.err, err) {
 			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, err)
 		}
 	}

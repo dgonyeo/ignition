@@ -18,13 +18,13 @@ import (
 	"crypto"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/coreos/ignition/config/validate/report"
 )
 
 var (
+	ErrHashIsNull       = errors.New("hash is null")
 	ErrHashMalformed    = errors.New("malformed hash specifier")
 	ErrHashWrongSize    = errors.New("incorrect size for hash sum")
 	ErrHashUnrecognized = errors.New("unrecognized hash function")
@@ -34,7 +34,7 @@ var (
 // in this Verification, or an error if there is an issue during parsing.
 func (v Verification) HashParts() (string, string, error) {
 	if v.Hash == nil {
-		return "", "", fmt.Errorf("hash is null")
+		return "", "", ErrHashIsNull
 	}
 	parts := strings.SplitN(*v.Hash, "-", 2)
 	if len(parts) != 2 {
@@ -50,7 +50,7 @@ func (v Verification) Validate() report.Report {
 	function, sum, err := v.HashParts()
 	if err != nil {
 		r.Add(report.Entry{
-			Message: fmt.Sprintf("invalid hash: %v", err),
+			Message: err.Error(),
 			Kind:    report.EntryError,
 		})
 		return r

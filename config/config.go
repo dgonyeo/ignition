@@ -156,14 +156,14 @@ func version(rawConfig []byte) semver.Version {
 	var composite struct {
 		Version  *int `json:"ignitionVersion"`
 		Ignition struct {
-			Version *types.IgnitionVersion `json:"version"`
+			Version *string `json:"version"`
 		} `json:"ignition"`
 	}
 
 	if json.Unmarshal(rawConfig, &composite) == nil {
 		if composite.Ignition.Version != nil {
-			v, err := composite.Ignition.Version.Semver()
-			if err != nil {
+			v, err := types.IgnitionVersion{Version: *composite.Ignition.Version}.Semver()
+			if err == nil {
 				return *v
 			}
 		} else if composite.Version != nil {

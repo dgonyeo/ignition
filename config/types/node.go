@@ -46,7 +46,7 @@ func (n Node) Validate() report.Report {
 			Kind:    report.EntryError,
 		})
 	}
-	return report.Report{}
+	return r
 }
 
 func (n Node) Depth() int {
