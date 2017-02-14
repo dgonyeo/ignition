@@ -52,7 +52,7 @@ func TestAssertValid(t *testing.T) {
 		{
 			in: in{
 				verification: types.Verification{
-					Hash: &types.Hash{Function: "xor"},
+					Hash: stringDeref("xor-"),
 				},
 			},
 			out: out{err: types.ErrHashUnrecognized},

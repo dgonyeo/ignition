@@ -17,6 +17,7 @@ package config
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/coreos/ignition/config/types"
 	v1 "github.com/coreos/ignition/config/v1/types"
@@ -210,7 +211,8 @@ func TranslateFromV2_0(old v2_0.Config) types.Config {
 	translateVerification := func(old v2_0.Verification) types.Verification {
 		var ver types.Verification
 		if old.Hash != nil {
-			h := old.Hash.String()
+			// .String() here is a wrapper around MarshalJSON, which will put the hash in quotes
+			h := strings.Trim(old.Hash.String(), "\"")
 			ver.Hash = &h
 		}
 		return ver

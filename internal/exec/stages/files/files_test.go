@@ -15,9 +15,10 @@
 package files
 
 import (
-	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/kylelemons/godebug/pretty"
 
 	"github.com/coreos/ignition/config/types"
 	"github.com/coreos/ignition/internal/exec/util"
@@ -33,8 +34,8 @@ func TestMapEntriesToFilesystems(t *testing.T) {
 		err   error
 	}
 
-	fs1 := types.Path("/fs1")
-	fs2 := types.Path("/fs2")
+	fs1 := "/fs1"
+	fs2 := "/fs2"
 
 	tests := []struct {
 		in  in
@@ -94,11 +95,11 @@ func TestMapEntriesToFilesystems(t *testing.T) {
 	for i, test := range tests {
 		logger := log.New()
 		files, err := stage{Util: util.Util{Logger: &logger}}.mapEntriesToFilesystems(test.in.config)
-		if !reflect.DeepEqual(test.out.err, err) {
-			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.err, err)
+		if str := pretty.Compare(err, test.out.err); str != "" {
+			t.Errorf("#%d: bad error:\n%s", i, str)
 		}
-		if !reflect.DeepEqual(test.out.files, files) {
-			t.Errorf("#%d: bad map: want %#v, got %#v", i, test.out.files, files)
+		if str := pretty.Compare(files, test.out.files); str != "" {
+			t.Errorf("#%d: bad map:\n%s", i, str)
 		}
 	}
 }
@@ -131,17 +132,17 @@ func TestDirectorySort(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		dirs := make([]types.Directory, len(test.in.data))
+		dirs := make([]types.Node, len(test.in.data))
 		for j := range dirs {
-			dirs[j].Path = types.Path(test.in.data[j])
+			dirs[j].Path = test.in.data[j]
 		}
 		sort.Sort(ByDirectorySegments(dirs))
 		outpaths := make([]string, len(test.in.data))
 		for j, dir := range dirs {
-			outpaths[j] = string(dir.Path)
+			outpaths[j] = dir.Path
 		}
-		if !reflect.DeepEqual(test.out.data, outpaths) {
-			t.Errorf("#%d: bad error: want %v, got %v", i, test.out.data, outpaths)
+		if str := pretty.Compare(outpaths, test.out.data); str != "" {
+			t.Errorf("#%d: bad error:\n%s", i, str)
 		}
 	}
 }

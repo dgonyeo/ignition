@@ -16,10 +16,10 @@ package config
 
 import (
 	"net/url"
-	"reflect"
 	"testing"
 
 	"github.com/coreos/go-semver/semver"
+	"github.com/kylelemons/godebug/pretty"
 
 	"github.com/coreos/ignition/config/types"
 	v1 "github.com/coreos/ignition/config/v1/types"
@@ -430,8 +430,8 @@ func TestTranslateFromV1(t *testing.T) {
 
 	for i, test := range tests {
 		config := TranslateFromV1(test.in.config)
-		if !reflect.DeepEqual(test.out.config, config) {
-			t.Errorf("#%d: bad config: want %+v, got %+v", i, test.out.config, config)
+		if str := pretty.Compare(config, test.out.config); str != "" {
+			t.Errorf("#%d: bad config:\n%s", i, str)
 		}
 	}
 }
@@ -943,8 +943,8 @@ func TestTranslateFromV2_0(t *testing.T) {
 
 	for i, test := range tests {
 		config := TranslateFromV2_0(test.in.config)
-		if !reflect.DeepEqual(test.out.config, config) {
-			t.Errorf("#%d: bad config: want %+v, got %+v", i, test.out.config, config)
+		if str := pretty.Compare(config, test.out.config); str != "" {
+			t.Errorf("#%d: bad config:\n%s", i, str)
 		}
 	}
 }
