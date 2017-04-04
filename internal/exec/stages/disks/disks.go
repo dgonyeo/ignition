@@ -20,7 +20,7 @@ package disks
 
 import (
 	"fmt"
-	"net/url"
+	//"net/url"
 	"os/exec"
 
 	"github.com/coreos/ignition/config/types"
@@ -31,8 +31,7 @@ import (
 	"github.com/coreos/ignition/internal/sgdisk"
 	"github.com/coreos/ignition/internal/systemd"
 	"github.com/martinjungblut/cryptsetup"
-
-	"golang.org/x/net/context"
+	//"golang.org/x/net/context"
 )
 
 const (
@@ -269,12 +268,17 @@ func (s stage) createLuks(luks types.Luks) error {
 		return fmt.Errorf("No key")
 	}
 
-	keyUrl, err := url.Parse(luks.Key)
-	if err != nil {
-		return fmt.Errorf("Unable to parse key URL: %v", err)
-	}
+	key := "foobar"
 
-	key, err := resource.Fetch(s.Logger, s.client, context.Background(), *keyUrl)
+	//keyUrl, err := url.Parse(luks.Key)
+	//if err != nil {
+	//	return fmt.Errorf("Unable to parse key URL: %v", err)
+	//}
+
+	//key, err := resource.Fetch(s.Logger, s.client, context.Background(), *keyUrl)
+	//if err != nil {
+	//	return fmt.Errorf("Unable to fetch key: %v", err)
+	//}
 
 	err, device := cryptsetup.Init(string(luks.Device))
 	if err != nil {

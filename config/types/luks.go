@@ -35,9 +35,9 @@ func (l Luks) Validate() report.Report {
 	if len(l.Device) == 0 {
 		return report.ReportFromError(ErrLuksNoDevice, report.EntryError)
 	}
-	if l.Key == "" {
-		return report.ReportFromError(ErrLuksNoKey, report.EntryError)
-	}
+	//if l.Key == "" {
+	//	return report.ReportFromError(ErrLuksNoKey, report.EntryError)
+	//}
 
 	return report.Report{}
 }
