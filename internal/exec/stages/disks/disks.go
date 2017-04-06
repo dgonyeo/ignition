@@ -264,9 +264,9 @@ func (s stage) createLukss(config types.Config) error {
 }
 
 func (s stage) createLuks(luks types.Luks) error {
-	if luks.Key == "" {
-		return fmt.Errorf("No key")
-	}
+	//if luks.Key == "" {
+	//	return fmt.Errorf("No key")
+	//}
 
 	key := "foobar"
 
