@@ -284,9 +284,11 @@ func (s stage) createLuks(luks types.Luks) error {
 	if err != nil {
 		return fmt.Errorf("Unable to initialise cryptsetup: %v", err)
 	}
-	params := cryptsetup.LUKSParams{Hash: "sha256",
+	params := cryptsetup.LUKSParams{
+		Hash:           "sha1",
 		Data_alignment: 0,
-		Data_device:    ""}
+		Data_device:    "",
+	}
 
 	err = device.FormatLUKS("aes", "xts-plain64", "", "", 256/8, params)
 	if err != nil {
