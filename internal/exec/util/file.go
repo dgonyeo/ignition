@@ -139,6 +139,12 @@ func RenderFile(l *log.Logger, c *resource.HttpClient, f types.File) *File {
 		tmp := int(gid)
 		f.Group.ID = &tmp
 	}
+	if f.User.ID == nil {
+		f.User.ID = intToPtr(0)
+	}
+	if f.Group.ID == nil {
+		f.Group.ID = intToPtr(0)
+	}
 
 	return &File{
 		Path:        f.Path,
@@ -149,6 +155,10 @@ func RenderFile(l *log.Logger, c *resource.HttpClient, f types.File) *File {
 		Gid:         *f.Group.ID,
 		expectedSum: expectedSum,
 	}
+}
+
+func intToPtr(i int) *int {
+	return &i
 }
 
 // gzipReader is a wrapper for gzip's reader that closes the stream it wraps as well
