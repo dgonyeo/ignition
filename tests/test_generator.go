@@ -19,6 +19,7 @@ import (
 	"github.com/coreos/ignition/tests/negative/general"
 	"github.com/coreos/ignition/tests/negative/regression"
 	"github.com/coreos/ignition/tests/negative/storage"
+	ntimeouts "github.com/coreos/ignition/tests/negative/timeouts"
 	"github.com/coreos/ignition/tests/positive/files"
 	"github.com/coreos/ignition/tests/positive/general"
 	"github.com/coreos/ignition/tests/positive/networkd"
@@ -26,6 +27,7 @@ import (
 	"github.com/coreos/ignition/tests/positive/regression"
 	"github.com/coreos/ignition/tests/positive/storage"
 	"github.com/coreos/ignition/tests/positive/systemd"
+	ptimeouts "github.com/coreos/ignition/tests/positive/timeouts"
 	"github.com/coreos/ignition/tests/types"
 )
 
@@ -45,6 +47,7 @@ func createNegativeTests() []types.Test {
 	tests = append(tests, negative_storage.No_filesystem_type())
 	tests = append(tests, negative_storage.No_filesystem_type_with_force())
 	tests = append(tests, negative_storage.No_filesystem_type_with_wipe_filesystem())
+	tests = append(tests, ntimeouts.Decrease_HTTP_Response_Headers_Timeout())
 
 	return tests
 }
@@ -81,6 +84,8 @@ func createTests() []types.Test {
 	tests = append(tests, systemd.Create_systemd_service())
 	tests = append(tests, systemd.Modify_systemd_service())
 	tests = append(tests, systemd.Mask_systemd_services())
+	tests = append(tests, ptimeouts.Increase_HTTP_Response_Headers_Timeout())
+	tests = append(tests, ptimeouts.Confirm_HTTP_Backoff_Works())
 
 	return tests
 }
