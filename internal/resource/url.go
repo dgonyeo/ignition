@@ -44,6 +44,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/pin/tftp"
 	"github.com/vincent-petithory/dataurl"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 )
 
 var (
@@ -330,7 +331,14 @@ func (f *Fetcher) FetchFromS3(u url.URL, dest *os.File, opts FetchOptions) error
 	sess := f.AWSSession.Copy()
 
 	// Determine the region this bucket is in
-	region, err := s3manager.GetBucketRegion(ctx, sess, u.Host, "us-east-1")
+	regionHint, err := ec2metadata.New(sess).Region()
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
+			return fmt.Errorf("couldn't determine the region for bucket %q: %v", u.Host, err)
+		}
+		return err
+	}
+	region, err := s3manager.GetBucketRegion(ctx, sess, u.Host, regionHint)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
 			return fmt.Errorf("couldn't determine the region for bucket %q: %v", u.Host, err)
