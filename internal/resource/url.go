@@ -333,10 +333,7 @@ func (f *Fetcher) FetchFromS3(u url.URL, dest *os.File, opts FetchOptions) error
 	// Determine the region this bucket is in
 	regionHint, err := ec2metadata.New(sess).Region()
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
-			return fmt.Errorf("couldn't determine the region for bucket %q: %v", u.Host, err)
-		}
-		return err
+		regionHint = "us-east-1"
 	}
 	region, err := s3manager.GetBucketRegion(ctx, sess, u.Host, regionHint)
 	if err != nil {
