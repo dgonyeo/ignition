@@ -28,8 +28,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 var (
@@ -64,9 +64,9 @@ func NewFetcher(l *log.Logger, c *resource.HttpClient) (resource.Fetcher, error)
 		regionHint = "us-east-1"
 	}
 	return resource.Fetcher{
-		Logger:     l,
-		Client:     c,
-		AWSSession: sess,
+		Logger:       l,
+		Client:       c,
+		AWSSession:   sess,
 		S3RegionHint: regionHint,
 	}, nil
 }

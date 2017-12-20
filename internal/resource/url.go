@@ -44,7 +44,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/pin/tftp"
 	"github.com/vincent-petithory/dataurl"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 )
 
 var (
