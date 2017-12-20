@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 )
 
 var (
@@ -56,9 +57,16 @@ func NewFetcher(l *log.Logger, c *resource.HttpClient) (resource.Fetcher, error)
 		return resource.Fetcher{}, err
 	}
 	sess.Config.Credentials = ec2rolecreds.NewCredentials(sess)
+
+	// Determine the partition and region this ec2 is in
+	regionHint, err := ec2metadata.New(sess).Region()
+	if err != nil {
+		regionHint = "us-east-1"
+	}
 	return resource.Fetcher{
 		Logger:     l,
 		Client:     c,
 		AWSSession: sess,
+		S3RegionHint: regionHint,
 	}, nil
 }

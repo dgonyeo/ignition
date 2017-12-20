@@ -92,6 +92,10 @@ type Fetcher struct {
 	// first S3 object that is fetched will initialize the field. This can be
 	// used to set credentials.
 	AWSSession *session.Session
+
+	// The region where the EC2 machine trying to fetch is.
+	// This is used as a hint to fetch the S3 bucket from the right partition and region.
+	S3RegionHint string
 }
 
 type FetchOptions struct {
@@ -330,10 +334,10 @@ func (f *Fetcher) FetchFromS3(u url.URL, dest *os.File, opts FetchOptions) error
 	}
 	sess := f.AWSSession.Copy()
 
-	// Determine the region this bucket is in
-	regionHint, err := ec2metadata.New(sess).Region()
-	if err != nil {
-		regionHint = "us-east-1"
+	// Determine the partition and region this bucket is in
+	regionHint := "us-east-1"
+	if f.S3RegionHint != "" {
+		regionHint = f.S3RegionHint
 	}
 	region, err := s3manager.GetBucketRegion(ctx, sess, u.Host, regionHint)
 	if err != nil {
