@@ -234,10 +234,10 @@
               "type": "integer"
             },
             "size": {
-              "type": "integer"
+              "type": ["integer", "null"]
             },
             "start": {
-              "type": "integer"
+              "type": ["integer", "null"]
             },
             "typeGuid": {
               "type": "string"
