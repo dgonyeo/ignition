@@ -33,6 +33,20 @@ var (
 	ErrLabelContainsColon   = errors.New("partition label will be truncated to text before the colon")
 )
 
+func (p Partition) GetStart() int {
+	if p.Start == nil {
+		return 0
+	}
+	return *p.Start
+}
+
+func (p Partition) GetSize() int {
+	if p.Size == nil {
+		return 0
+	}
+	return *p.Size
+}
+
 func (p Partition) ValidateLabel() report.Report {
 	r := report.Report{}
 	// http://en.wikipedia.org/wiki/GUID_Partition_Table#Partition_entries:

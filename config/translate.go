@@ -59,8 +59,8 @@ func TranslateFromV1(old v1.Config) types.Config {
 			disk.Partitions = append(disk.Partitions, types.Partition{
 				Label:    string(oldPartition.Label),
 				Number:   oldPartition.Number,
-				Size:     int(oldPartition.Size),
-				Start:    int(oldPartition.Start),
+				Size:     intToPtr(int(oldPartition.Size)),
+				Start:    intToPtr(int(oldPartition.Start)),
 				TypeGUID: string(oldPartition.TypeGUID),
 			})
 		}
@@ -266,8 +266,8 @@ func TranslateFromV2_0(old v2_0.Config) types.Config {
 			disk.Partitions = append(disk.Partitions, types.Partition{
 				Label:    string(oldPartition.Label),
 				Number:   oldPartition.Number,
-				Size:     int(oldPartition.Size),
-				Start:    int(oldPartition.Start),
+				Size:     intToPtr(int(oldPartition.Size)),
+				Start:    intToPtr(int(oldPartition.Start)),
 				TypeGUID: string(oldPartition.TypeGUID),
 			})
 		}
@@ -558,8 +558,8 @@ func TranslateFromV2_1(old v2_1.Config) types.Config {
 				GUID:     x.GUID,
 				Label:    x.Label,
 				Number:   x.Number,
-				Size:     x.Size,
-				Start:    x.Start,
+				Size:     intToPtr(x.Size),
+				Start:    intToPtr(x.Start),
 				TypeGUID: x.TypeGUID,
 			})
 		}
