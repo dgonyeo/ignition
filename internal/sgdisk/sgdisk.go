@@ -36,6 +36,7 @@ type Partition struct {
 	Label    string
 	TypeGUID string
 	GUID     string
+	MBUnits  bool
 }
 
 // Begin begins an sgdisk operation
@@ -70,7 +71,11 @@ func (op *Operation) Commit() error {
 	if len(op.parts) != 0 {
 		opts := []string{}
 		for _, p := range op.parts {
-			opts = append(opts, fmt.Sprintf("--new=%d:%d:+%d", p.Number, p.Offset, p.Length))
+			if p.MBUnits {
+				opts = append(opts, fmt.Sprintf("--new=%d:%dM:+%dM", p.Number, p.Offset, p.Length))
+			} else {
+				opts = append(opts, fmt.Sprintf("--new=%d:%d:+%d", p.Number, p.Offset, p.Length))
+			}
 			opts = append(opts, fmt.Sprintf("--change-name=%d:%s", p.Number, p.Label))
 			if p.TypeGUID != "" {
 				opts = append(opts, fmt.Sprintf("--typecode=%d:%s", p.Number, p.TypeGUID))

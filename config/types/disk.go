@@ -54,6 +54,12 @@ func (n Disk) ValidatePartitions() report.Report {
 			Kind:    report.EntryError,
 		})
 	}
+	if n.partitionsUnitsMismatch() {
+		r.Add(report.Entry{
+			Message: fmt.Sprintf("disk %q: mixes MB and sectors units in partitions", n.Device),
+			Kind:    report.EntryError,
+		})
+	}
 	// Disks which have no errors at this point will likely succeed in sgdisk
 	return r
 }
@@ -126,4 +132,19 @@ func (n Disk) partitionsMisaligned() bool {
 		}
 	}
 	return false
+}
+
+// partitionsUnitsMismatch returns true if some partitions use the MB start and size fields and other partitions use the sectors start and size fields.
+func (n Disk) partitionsUnitsMismatch() bool {
+	partsInMb := false
+	partsNotInMb := false
+	for _, p := range n.Partitions {
+		if p.Size != nil || p.Start != nil {
+			partsNotInMb = true
+		}
+		if p.SizeMb != nil || p.StartMb != nil {
+			partsInMb = true
+		}
+	}
+	return partsInMb && partsNotInMb
 }

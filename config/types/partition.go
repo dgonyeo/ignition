@@ -31,20 +31,44 @@ var (
 	ErrLabelTooLong         = errors.New("partition labels may not exceed 36 characters")
 	ErrDoesntMatchGUIDRegex = errors.New("doesn't match the form \"01234567-89AB-CDEF-EDCB-A98765432101\"")
 	ErrLabelContainsColon   = errors.New("partition label will be truncated to text before the colon")
+	ErrStartAndStartMb      = errors.New("cannot specify both start and start-mb")
+	ErrSizeAndSizeMb        = errors.New("cannot specify both size and size-mb")
+	ErrUnitMismatch         = errors.New("must use either start and size or start-mb and size-mb")
 )
 
 func (p Partition) GetStart() int {
-	if p.Start == nil {
-		return 0
+	if p.Start != nil {
+		return *p.Start
 	}
-	return *p.Start
+	if p.StartMb != nil {
+		return *p.StartMb
+	}
+	return 0
 }
 
 func (p Partition) GetSize() int {
-	if p.Size == nil {
-		return 0
+	if p.Size != nil {
+		return *p.Size
 	}
-	return *p.Size
+	if p.SizeMb != nil {
+		return *p.SizeMb
+	}
+	return 0
+}
+
+func (p Partition) IsInMb() bool {
+	return p.StartMb != nil || p.SizeMb != nil
+}
+
+func (p Partition) Validate() report.Report {
+	r := report.Report{}
+	if (p.Start != nil || p.Size != nil) && (p.StartMb != nil || p.SizeMb != nil) {
+		r.Add(report.Entry{
+			Message: ErrUnitMismatch.Error(),
+			Kind:    report.EntryWarning,
+		})
+	}
+	return r
 }
 
 func (p Partition) ValidateLabel() report.Report {
