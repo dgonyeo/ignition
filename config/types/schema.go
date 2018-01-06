@@ -133,7 +133,9 @@ type Partition struct {
 	Label    string `json:"label,omitempty"`
 	Number   int    `json:"number,omitempty"`
 	Size     *int   `json:"size,omitempty"`
+	SizeMb   *int   `json:"size-mb,omitempty"`
 	Start    *int   `json:"start,omitempty"`
+	StartMb  *int   `json:"start-mb,omitempty"`
 	TypeGUID string `json:"typeGuid,omitempty"`
 }
 
