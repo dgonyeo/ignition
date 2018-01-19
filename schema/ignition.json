@@ -24,10 +24,10 @@
   ],
   "definitions": {
     "verification": {
-        "type": "object",
-        "properties": {
-            "hash": { "type": ["string", "null"] }
-        }
+      "type": "object",
+      "properties": {
+        "hash": { "type": ["string", "null"] }
+      }
     },
     "ignition": {
       "type": "object",
@@ -193,17 +193,17 @@
         },
         "directory": {
           "allOf": [
-              {
-                "$ref": "#/definitions/storage/definitions/node"
-              },
-              {
-                "type": "object",
-                "properties": {
-                    "mode": {
-                        "type": ["integer", "null"]
-                    }
+            {
+              "$ref": "#/definitions/storage/definitions/node"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "type": ["integer", "null"]
                 }
               }
+            }
           ]
         },
         "link": {
@@ -257,10 +257,10 @@
               "type": "string"
             },
             "options": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
             "wipeFilesystem": {
               "type": "boolean"
@@ -320,7 +320,7 @@
                   "type": ["integer", "null"]
                 },
                 "name": {
-                    "type": "string"
+                  "type": "string"
                 }
               }
             },
@@ -331,7 +331,7 @@
                   "type": ["integer", "null"]
                 },
                 "name": {
-                    "type": "string"
+                  "type": "string"
                 }
               }
             }
