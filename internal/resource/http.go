@@ -15,16 +15,23 @@
 package resource
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/hex"
+	"encoding/pem"
 	"errors"
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/coreos/ignition/config/types"
 	"github.com/coreos/ignition/internal/log"
+	"github.com/coreos/ignition/internal/util"
 	"github.com/coreos/ignition/internal/version"
 
+	"github.com/vincent-petithory/dataurl"
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
 )
@@ -38,7 +45,8 @@ const (
 )
 
 var (
-	ErrTimeout = errors.New("unable to fetch resource in time")
+	ErrTimeout         = errors.New("unable to fetch resource in time")
+	ErrPEMDecodeFailed = errors.New("unable to decode pem block")
 )
 
 // HttpClient is a simple wrapper around the Go HTTP client that standardizes
@@ -49,6 +57,7 @@ type HttpClient struct {
 	timeout time.Duration
 
 	transport *http.Transport
+	cas       map[types.CaReference][]byte
 }
 
 func (f *Fetcher) UpdateHttpTimeouts(timeouts types.Timeouts) {
@@ -72,6 +81,103 @@ func (f *Fetcher) UpdateHttpTimeouts(timeouts types.Timeouts) {
 	f.client.client.Transport = f.client.transport
 }
 
+func (f *Fetcher) UpdateHttpsCAs(cas []types.CaReference) error {
+	if f.client == nil {
+		f.newHttpClient()
+	}
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		f.Logger.Err("Unable to read system certificate pool: %s", err)
+		return err
+	}
+
+	for _, ca := range cas {
+		u, err := url.Parse(ca.Source)
+		if err != nil {
+			f.Logger.Err("Unable to parse CA URL: %s", err)
+			return err
+		}
+
+		cablob, err := f.getCABlob(u, ca)
+		if err != nil {
+			return err
+		}
+		block, _ := pem.Decode(cablob)
+		if block == nil {
+			f.Logger.Err("Unable to decode CA (%s)", u)
+			return ErrPEMDecodeFailed
+		}
+
+		cert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			f.Logger.Err("Unable to parse CA (%s): %s", u, err)
+			return err
+		}
+
+		f.Logger.Info("Adding %q to list of CAs", cert.Subject.CommonName)
+		pool.AddCert(cert)
+	}
+
+	f.client.transport.TLSClientConfig = &tls.Config{RootCAs: pool}
+	f.client.client.Transport = f.client.transport
+	return nil
+}
+
+func (f *Fetcher) getCABlob(u *url.URL, ca types.CaReference) ([]byte, error) {
+	if blob, ok := f.client.cas[ca]; ok {
+		return blob, nil
+	}
+	hasher, err := util.GetHasher(ca.Verification)
+	if err != nil {
+		f.Logger.Crit("Unable to get hasher: %s", err)
+		return nil, err
+	}
+
+	var expectedSum []byte
+	if hasher != nil {
+		// explicitly ignoring the error here because the config should already
+		// be validated by this point
+		_, expectedSumString, _ := ca.Verification.HashParts()
+		expectedSum, err = hex.DecodeString(expectedSumString)
+		if err != nil {
+			f.Logger.Crit("Error parsing verification string %q: %v", expectedSumString, err)
+			return nil, err
+		}
+	}
+
+	cablob, err := f.FetchToBuffer(*u, FetchOptions{
+		Hash:        hasher,
+		ExpectedSum: expectedSum,
+	})
+	if err != nil {
+		f.Logger.Err("Unable to fetch CA (%s): %s", u, err)
+		return nil, err
+	}
+	f.client.cas[ca] = cablob
+	return cablob, nil
+
+}
+
+// RewriteCAsWithDataUrls will modify the passed in slice of CA references to
+// contain the actual CA file via a dataurl in their source field.
+func (f *Fetcher) RewriteCAsWithDataUrls(cas []types.CaReference) error {
+	for i, ca := range cas {
+		u, err := url.Parse(ca.Source)
+		if err != nil {
+			f.Logger.Err("Unable to parse CA URL: %s", err)
+			return err
+		}
+
+		blob, err := f.getCABlob(u, ca)
+		if err != nil {
+			return err
+		}
+
+		cas[i].Source = dataurl.EncodeBytes(blob)
+	}
+	return nil
+}
+
 func (f *Fetcher) newHttpClient() {
 	transport := &http.Transport{
 		ResponseHeaderTimeout: time.Duration(defaultHttpResponseHeaderTimeout) * time.Second,
@@ -91,6 +197,7 @@ func (f *Fetcher) newHttpClient() {
 		logger:    f.Logger,
 		timeout:   time.Duration(defaultHttpTotalTimeout) * time.Second,
 		transport: transport,
+		cas:       make(map[types.CaReference][]byte),
 	}
 }
 

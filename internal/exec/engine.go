@@ -106,6 +106,10 @@ func (e *Engine) acquireConfig() (cfg types.Config, f resource.Fetcher, err erro
 		// Create an http client and fetcher with the timeouts from the cached
 		// config
 		f.UpdateHttpTimeouts(cfg.Ignition.Timeouts)
+		err = f.UpdateHttpsCAs(cfg.Ignition.Security.TLS.CertificateAuthorities)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -121,8 +125,20 @@ func (e *Engine) acquireConfig() (cfg types.Config, f resource.Fetcher, err erro
 		return
 	}
 
-	// Update the http client to use the timeouts from the newly fetched config
+	// Update the http client to use the timeouts and CAs from the newly fetched
+	// config
 	f.UpdateHttpTimeouts(cfg.Ignition.Timeouts)
+	err = f.UpdateHttpsCAs(cfg.Ignition.Security.TLS.CertificateAuthorities)
+	if err != nil {
+		e.Logger.Crit("failed to generate fetcher: %s", err)
+		return
+	}
+
+	err = f.RewriteCAsWithDataUrls(cfg.Ignition.Security.TLS.CertificateAuthorities)
+	if err != nil {
+		e.Logger.Crit("error handling CAs: %v", err)
+		return
+	}
 
 	// Populate the config cache.
 	b, err = json.Marshal(cfg)
@@ -171,6 +187,10 @@ func (e *Engine) fetchProviderConfig(f resource.Fetcher) (types.Config, resource
 	// Replace the HTTP client in the fetcher to be configured with the
 	// timeouts of the config
 	f.UpdateHttpTimeouts(cfg.Ignition.Timeouts)
+	err = f.UpdateHttpsCAs(cfg.Ignition.Security.TLS.CertificateAuthorities)
+	if err != nil {
+		return types.Config{}, f, err
+	}
 
 	return e.renderConfig(cfg, f)
 }
@@ -192,6 +212,10 @@ func (e *Engine) renderConfig(cfg types.Config, f resource.Fetcher) (types.Confi
 		// Replace the HTTP client in the fetcher to be configured with the
 		// timeouts of the new config
 		f.UpdateHttpTimeouts(newCfg.Ignition.Timeouts)
+		err = f.UpdateHttpsCAs(newCfg.Ignition.Security.TLS.CertificateAuthorities)
+		if err != nil {
+			return types.Config{}, f, err
+		}
 
 		return e.renderConfig(newCfg, f)
 	}
@@ -204,10 +228,14 @@ func (e *Engine) renderConfig(cfg types.Config, f resource.Fetcher) (types.Confi
 		}
 
 		// Append the old config with the new config before the new config has
-		// been rendered, so we can use the new config's timeouts  when fetching
-		// more configs.
+		// been rendered, so we can use the new config's timeouts and CAs when
+		// fetching more configs.
 		cfgForFetcherSettings := config.Append(appendedCfg, newCfg)
 		f.UpdateHttpTimeouts(cfgForFetcherSettings.Ignition.Timeouts)
+		err = f.UpdateHttpsCAs(cfgForFetcherSettings.Ignition.Security.TLS.CertificateAuthorities)
+		if err != nil {
+			return types.Config{}, f, err
+		}
 
 		newCfg, f, err = e.renderConfig(newCfg, f)
 		if err != nil {
