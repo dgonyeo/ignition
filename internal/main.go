@@ -70,6 +70,8 @@ func main() {
 
 	logger.Info(version.String)
 
+	logger.Info(fmt.Sprintf("Ignition's environment is: %v", os.Environ()))
+
 	if flags.clearCache {
 		if err := os.Remove(flags.configCache); err != nil {
 			logger.Err("unable to clear cache: %v", err)
