@@ -289,16 +289,16 @@ func (u Util) PerformFetch(f *FetchOp) error {
 // for /foo.
 func copyXattrFromParent(path string) error {
 	parent := filepath.Dir(path)
-	attrNames, err := listXattrs(parent)
+	attrNames, err := ListXattrs(parent)
 	if err != nil {
 		return err
 	}
 	for _, attrName := range attrNames {
-		val, err := getXattr(parent, attrName)
+		val, err := GetXattr(parent, attrName)
 		if err != nil {
 			return err
 		}
-		err = lsetXattr(path, attrName, val)
+		err = LsetXattr(path, attrName, val)
 		if err != nil {
 			return err
 		}

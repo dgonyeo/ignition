@@ -34,7 +34,7 @@ func retrieveXattrData(f func(buf []byte) (int, error)) ([]byte, error) {
 	return []byte{}, nil
 }
 
-func listXattrs(path string) ([]string, error) {
+func ListXattrs(path string) ([]string, error) {
 	buf, err := retrieveXattrData(func(buf []byte) (int, error) {
 		return unix.Listxattr(path, buf)
 	})
@@ -52,16 +52,16 @@ func listXattrs(path string) ([]string, error) {
 	return result, nil
 }
 
-func getXattr(path, name string) ([]byte, error) {
+func GetXattr(path, name string) ([]byte, error) {
 	return retrieveXattrData(func(buf []byte) (int, error) {
 		return unix.Getxattr(path, name, buf)
 	})
 }
 
-func setXattr(path, name string, data []byte) error {
+func SetXattr(path, name string, data []byte) error {
 	return unix.Setxattr(path, name, data, 0)
 }
 
-func lsetXattr(path, name string, data []byte) error {
+func LsetXattr(path, name string, data []byte) error {
 	return unix.Lsetxattr(path, name, data, 0)
 }
