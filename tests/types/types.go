@@ -49,6 +49,7 @@ type Node struct {
 	Directory string
 	User      int
 	Group     int
+	Xattrs    map[string][]byte
 }
 
 type Disk struct {

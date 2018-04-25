@@ -24,6 +24,8 @@ func init() {
 	register.Register(register.PositiveTest, CreateSymlinkOnRoot())
 	register.Register(register.PositiveTest, ForceLinkCreation())
 	register.Register(register.PositiveTest, ForceHardLinkCreation())
+	register.Register(register.PositiveTest, SymlinkCreationXattrs())
+	register.Register(register.PositiveTest, HardlinkCreationXattrs())
 }
 
 func CreateHardLinkOnRoot() types.Test {
@@ -224,6 +226,113 @@ func ForceHardLinkCreation() types.Test {
 				Name:      "bar",
 			},
 			Target: "/foo/target",
+			Hard:   true,
+		},
+	})
+
+	return types.Test{
+		Name:   name,
+		In:     in,
+		Out:    out,
+		Config: config,
+	}
+}
+
+func SymlinkCreationXattrs() types.Test {
+	name := "Symlink Creation Xattrs"
+	in := types.GetBaseDisk()
+	out := types.GetBaseDisk()
+	config := `{
+	  "ignition": { "version": "2.2.0" },
+	  "storage": {
+	    "links": [{
+	      "filesystem": "root",
+	      "path": "/foo/bar",
+		  "target": "/foo/baz",
+		  "hard": false
+	    }]
+	  }
+	}`
+	xattrs := make(map[string][]byte)
+	xattrs["selinux"] = []byte("unconfined_u:object_r:user_home_t:s0")
+	xattrs["test"] = []byte("dfjkhaeuihgauiogrh")
+
+	in[0].Partitions.AddDirectories("ROOT", []types.Directory{
+		{
+			Node: types.Node{
+				Name:   "foo",
+				Xattrs: xattrs,
+			},
+			Mode: 0700,
+		},
+	})
+	out[0].Partitions.AddLinks("ROOT", []types.Link{
+		{
+			Node: types.Node{
+				Name:      "bar",
+				Directory: "foo",
+				Xattrs:    xattrs,
+			},
+			Target: "/foo/baz",
+			Hard:   false,
+		},
+	})
+
+	return types.Test{
+		Name:   name,
+		In:     in,
+		Out:    out,
+		Config: config,
+	}
+}
+
+func HardlinkCreationXattrs() types.Test {
+	name := "Hardlink Creation Xattrs"
+	in := types.GetBaseDisk()
+	out := types.GetBaseDisk()
+	config := `{
+	  "ignition": { "version": "2.2.0" },
+	  "storage": {
+	    "links": [{
+	      "filesystem": "root",
+	      "path": "/foo/bar",
+		  "target": "/foo/baz",
+		  "hard": true
+	    }]
+	  }
+	}`
+	xattrs := make(map[string][]byte)
+	xattrs["selinux"] = []byte("unconfined_u:object_r:user_home_t:s0")
+	xattrs["test"] = []byte("dfjkhaeuihgauiogrh")
+
+	in[0].Partitions.AddFiles("ROOT", []types.File{
+		{
+			Node: types.Node{
+				Directory: "foo",
+				Name:      "baz",
+			},
+			Mode:     0600,
+			Contents: "Hello, world!",
+		},
+	})
+
+	in[0].Partitions.AddDirectories("ROOT", []types.Directory{
+		{
+			Node: types.Node{
+				Name:   "foo",
+				Xattrs: xattrs,
+			},
+			Mode: 0700,
+		},
+	})
+	out[0].Partitions.AddLinks("ROOT", []types.Link{
+		{
+			Node: types.Node{
+				Name:      "bar",
+				Directory: "foo",
+				Xattrs:    xattrs,
+			},
+			Target: "/foo/baz",
 			Hard:   true,
 		},
 	})

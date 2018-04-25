@@ -21,6 +21,8 @@ import (
 
 func init() {
 	register.Register(register.PositiveTest, CreateFileOnRoot())
+	register.Register(register.PositiveTest, FileCreationXattrs())
+	register.Register(register.PositiveTest, FileCreationParentsXattrs())
 	register.Register(register.PositiveTest, UserGroupByID_2_0_0())
 	register.Register(register.PositiveTest, UserGroupByID_2_1_0())
 	register.Register(register.PositiveTest, ForceFileCreation())
@@ -50,6 +52,126 @@ func CreateFileOnRoot() types.Test {
 			Node: types.Node{
 				Name:      "bar",
 				Directory: "foo",
+			},
+			Contents: "example file\n",
+		},
+	})
+
+	return types.Test{
+		Name:   name,
+		In:     in,
+		Out:    out,
+		Config: config,
+	}
+}
+
+func FileCreationXattrs() types.Test {
+	name := "File Creation Xattrs"
+	in := types.GetBaseDisk()
+	out := types.GetBaseDisk()
+	config := `{
+	  "ignition": { "version": "2.2.0" },
+	  "storage": {
+	    "files": [{
+	      "filesystem": "root",
+	      "path": "/foo/bar",
+	      "contents": { "source": "data:,example%20file%0A" }
+	    }]
+	  }
+	}`
+	xattrs := make(map[string][]byte)
+	xattrs["selinux"] = []byte("unconfined_u:object_r:user_home_t:s0")
+	xattrs["test"] = []byte("dfjkhaeuihgauiogrh")
+
+	in[0].Partitions.AddDirectories("ROOT", []types.Directory{
+		{
+			Node: types.Node{
+				Name:   "foo",
+				Xattrs: xattrs,
+			},
+			Mode: 0700,
+		},
+	})
+	out[0].Partitions.AddFiles("ROOT", []types.File{
+		{
+			Node: types.Node{
+				Name:      "bar",
+				Directory: "foo",
+				Xattrs:    xattrs,
+			},
+			Contents: "example file\n",
+		},
+	})
+
+	return types.Test{
+		Name:   name,
+		In:     in,
+		Out:    out,
+		Config: config,
+	}
+}
+
+func FileCreationParentsXattrs() types.Test {
+	name := "File Creation Parents Xattrs"
+	in := types.GetBaseDisk()
+	out := types.GetBaseDisk()
+	config := `{
+	  "ignition": { "version": "2.2.0" },
+	  "storage": {
+	    "files": [{
+	      "filesystem": "root",
+	      "path": "/foo/bar/baz/test/example",
+	      "contents": { "source": "data:,example%20file%0A" }
+	    }]
+	  }
+	}`
+	xattrs := make(map[string][]byte)
+	xattrs["selinux"] = []byte("unconfined_u:object_r:user_home_t:s0")
+	xattrs["test"] = []byte("dfjkhaeuihgauiogrh")
+
+	in[0].Partitions.AddDirectories("ROOT", []types.Directory{
+		{
+			Node: types.Node{
+				Name:   "foo",
+				Xattrs: xattrs,
+			},
+		},
+	})
+	out[0].Partitions.AddDirectories("ROOT", []types.Directory{
+		{
+			Node: types.Node{
+				Name:   "foo",
+				Xattrs: xattrs,
+			},
+		},
+		{
+			Node: types.Node{
+				Directory: "foo",
+				Name:      "bar",
+				Xattrs:    xattrs,
+			},
+		},
+		{
+			Node: types.Node{
+				Directory: "foo/bar",
+				Name:      "baz",
+				Xattrs:    xattrs,
+			},
+		},
+		{
+			Node: types.Node{
+				Directory: "foo/bar/baz",
+				Name:      "test",
+				Xattrs:    xattrs,
+			},
+		},
+	})
+	out[0].Partitions.AddFiles("ROOT", []types.File{
+		{
+			Node: types.Node{
+				Directory: "foo/bar/baz/test",
+				Name:      "example",
+				Xattrs:    xattrs,
 			},
 			Contents: "example file\n",
 		},

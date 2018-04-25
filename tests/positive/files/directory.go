@@ -23,6 +23,7 @@ func init() {
 	register.Register(register.PositiveTest, CreateDirectoryOnRoot())
 	register.Register(register.PositiveTest, ForceDirCreation())
 	register.Register(register.PositiveTest, ForceDirCreationOverNonemptyDir())
+	register.Register(register.PositiveTest, DirectoryCreationXattrs())
 }
 
 func CreateDirectoryOnRoot() types.Test {
@@ -127,6 +128,50 @@ func ForceDirCreationOverNonemptyDir() types.Test {
 		},
 	})
 	// TODO: add ability to ensure that foo/bar/baz doesn't exist here.
+
+	return types.Test{
+		Name:   name,
+		In:     in,
+		Out:    out,
+		Config: config,
+	}
+}
+
+func DirectoryCreationXattrs() types.Test {
+	name := "Directory Creation Xattrs"
+	in := types.GetBaseDisk()
+	out := types.GetBaseDisk()
+	config := `{
+	  "ignition": { "version": "2.2.0" },
+	  "storage": {
+	    "directories": [{
+	      "filesystem": "root",
+	      "path": "/foo/bar"
+	    }]
+	  }
+	}`
+	xattrs := make(map[string][]byte)
+	xattrs["selinux"] = []byte("unconfined_u:object_r:user_home_t:s0")
+	xattrs["test"] = []byte("dfjkhaeuihgauiogrh")
+
+	in[0].Partitions.AddDirectories("ROOT", []types.Directory{
+		{
+			Node: types.Node{
+				Name:   "foo",
+				Xattrs: xattrs,
+			},
+			Mode: 0700,
+		},
+	})
+	out[0].Partitions.AddDirectories("ROOT", []types.Directory{
+		{
+			Node: types.Node{
+				Name:      "bar",
+				Directory: "foo",
+				Xattrs:    xattrs,
+			},
+		},
+	})
 
 	return types.Test{
 		Name:   name,

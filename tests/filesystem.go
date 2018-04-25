@@ -26,6 +26,7 @@ import (
 	"testing"
 
 	"github.com/coreos/ignition/internal/distro"
+	executil "github.com/coreos/ignition/internal/exec/util"
 	"github.com/coreos/ignition/tests/types"
 )
 
@@ -412,6 +413,12 @@ func createFilesFromSlice(t *testing.T, basedir string, files []types.File) erro
 				return err
 			}
 			writer.Flush()
+		}
+		for name, val := range file.Xattrs {
+			err := executil.SetXattr(f.Name(), name, val)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
