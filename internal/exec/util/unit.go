@@ -81,7 +81,7 @@ func FileFromNetworkdUnitDropin(unit types.Networkdunit, dropin types.NetworkdDr
 
 func (u Util) MaskUnit(unit types.Unit) error {
 	path := u.JoinPath(SystemdUnitsPath(), string(unit.Name))
-	if err := MkdirForFile(path); err != nil {
+	if err := MkdirForNode(path, 0, 0, DefaultFilePermissions, false); err != nil {
 		return err
 	}
 	if err := os.RemoveAll(path); err != nil {
@@ -100,7 +100,7 @@ func (u Util) DisableUnit(unit types.Unit) error {
 
 func (u Util) appendLineToPreset(data string) error {
 	path := u.JoinPath(presetPath)
-	if err := MkdirForFile(path); err != nil {
+	if err := MkdirForNode(path, 0, 0, DefaultFilePermissions, false); err != nil {
 		return err
 	}
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, DefaultPresetPermissions)

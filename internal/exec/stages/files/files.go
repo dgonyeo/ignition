@@ -162,36 +162,13 @@ func (tmp dirEntry) create(l *log.Logger, u util.Util) error {
 			return err
 		}
 
-		// Build a list of paths to create. Since os.MkdirAll only sets the mode for new directories and not the
-		// ownership, we need to determine which directories will be created so we don't chown something that already
-		// exists.
-		newPaths := []string{path}
-		for p := filepath.Dir(path); p != "/"; p = filepath.Dir(p) {
-			_, err := os.Stat(p)
-			if err == nil {
-				break
-			}
-			if !os.IsNotExist(err) {
-				return err
-			}
-			newPaths = append(newPaths, p)
-		}
-
 		if d.Mode == nil {
 			d.Mode = configUtil.IntToPtr(0)
 		}
 
-		if err := os.MkdirAll(path, os.FileMode(*d.Mode)); err != nil {
+		err = util.MkdirForNode(path, uid, gid, os.FileMode(*d.Mode), true)
+		if err != nil {
 			return err
-		}
-
-		for _, newPath := range newPaths {
-			if err := os.Chmod(newPath, os.FileMode(*d.Mode)); err != nil {
-				return err
-			}
-			if err := os.Chown(newPath, uid, gid); err != nil {
-				return err
-			}
 		}
 
 		return nil

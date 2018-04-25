@@ -107,25 +107,32 @@ func (u Util) PrepareFetch(l *log.Logger, f types.File) *FetchOp {
 func (u Util) WriteLink(s types.Link) error {
 	path := u.JoinPath(s.Path)
 
-	if err := MkdirForFile(path); err != nil {
+	uid, gid, err := u.ResolveNodeUidAndGid(s.Node, 0, 0)
+	if err != nil {
+		return err
+	}
+
+	if err := MkdirForNode(path, uid, gid, DefaultDirectoryPermissions, false); err != nil {
 		return err
 	}
 
 	if s.Hard {
 		targetPath := u.JoinPath(s.Target)
-		return os.Link(targetPath, path)
+		if err = os.Link(targetPath, path); err != nil {
+			return err
+		}
+		return copyXattrFromParent(path)
 	}
 
 	if err := os.Symlink(s.Target, path); err != nil {
 		return err
 	}
 
-	uid, gid, err := u.ResolveNodeUidAndGid(s.Node, 0, 0)
-	if err != nil {
+	if err := os.Lchown(path, uid, gid); err != nil {
 		return err
 	}
 
-	if err := os.Lchown(path, uid, gid); err != nil {
+	if err = copyXattrFromParent(path); err != nil {
 		return err
 	}
 
@@ -165,7 +172,27 @@ func (u Util) PerformFetch(f *FetchOp) error {
 		}
 	}
 
-	if err := MkdirForFile(path); err != nil {
+	// We need to know the file's uid and gid now for parent directory creation,
+	// and we might as well look up the target's mode (in the case that we're
+	// appending) at the same time
+	var uid, gid int
+	var appendMode os.FileMode
+	if f.Append {
+		// Default to the appended file's owner for the uid and gid
+		var defaultUid, defaultGid int
+		defaultUid, defaultGid, appendMode = getFileOwnerAndMode(path)
+		uid, gid, err = u.ResolveNodeUidAndGid(f.Node, defaultUid, defaultGid)
+		if err != nil {
+			return err
+		}
+	} else {
+		uid, gid, err = u.ResolveNodeUidAndGid(f.Node, 0, 0)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := MkdirForNode(path, uid, gid, DefaultDirectoryPermissions, false); err != nil {
 		return err
 	}
 
@@ -203,17 +230,11 @@ func (u Util) PerformFetch(f *FetchOp) error {
 			}
 		}
 
-		// Default to the appended file's owner for the uid and gid
-		defaultUid, defaultGid, mode := getFileOwnerAndMode(path)
-		uid, gid, err := u.ResolveNodeUidAndGid(f.Node, defaultUid, defaultGid)
-		if err != nil {
-			return err
-		}
 		if f.Mode != nil {
-			mode = os.FileMode(*f.Mode)
+			appendMode = os.FileMode(*f.Mode)
 		}
 
-		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, mode)
+		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, appendMode)
 		if err != nil {
 			return err
 		}
@@ -229,7 +250,7 @@ func (u Util) PerformFetch(f *FetchOp) error {
 		if err = os.Chown(targetFile.Name(), uid, gid); err != nil {
 			return err
 		}
-		if err = os.Chmod(targetFile.Name(), mode); err != nil {
+		if err = os.Chmod(targetFile.Name(), appendMode); err != nil {
 			return err
 		}
 	} else {
@@ -243,11 +264,6 @@ func (u Util) PerformFetch(f *FetchOp) error {
 			mode = os.FileMode(*f.Mode)
 		}
 
-		uid, gid, err := u.ResolveNodeUidAndGid(f.Node, 0, 0)
-		if err != nil {
-			return err
-		}
-
 		if err = os.Chown(tmp.Name(), uid, gid); err != nil {
 			return err
 		}
@@ -259,14 +275,79 @@ func (u Util) PerformFetch(f *FetchOp) error {
 		if err = os.Rename(tmp.Name(), path); err != nil {
 			return err
 		}
+		if err = copyXattrFromParent(path); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-// MkdirForFile helper creates the directory components of path.
-func MkdirForFile(path string) error {
-	return os.MkdirAll(filepath.Dir(path), DefaultDirectoryPermissions)
+// copyXattrFromParent will copy the extended attributes from a node's directory
+// to the given node. Ex: passing in /foo/bar would result in /foo/bar's
+// extended attributes being set to the same value as the extended attributes
+// for /foo.
+func copyXattrFromParent(path string) error {
+	parent := filepath.Dir(path)
+	attrNames, err := listXattrs(parent)
+	if err != nil {
+		return err
+	}
+	for _, attrName := range attrNames {
+		val, err := getXattr(parent, attrName)
+		if err != nil {
+			return err
+		}
+		err = lsetXattr(path, attrName, val)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// MkdirForNode helper creates the directory components of path.
+func MkdirForNode(path string, uid, gid int, mode os.FileMode, shouldCreateNode bool) error {
+	if !shouldCreateNode {
+		path = filepath.Dir(path)
+	}
+	// Build a list of paths to create. Since os.MkdirAll only sets the mode for new directories and not the
+	// ownership, we need to determine which directories will be created so we don't chown something that already
+	// exists.
+	newPaths := []string{path}
+	for p := path; p != "/"; p = filepath.Dir(p) {
+		_, err := os.Stat(p)
+		if err == nil {
+			break
+		}
+		if !os.IsNotExist(err) {
+			return err
+		}
+		newPaths = append(newPaths, p)
+	}
+	err := os.MkdirAll(path, mode)
+	if err != nil {
+		return err
+	}
+
+	// newPaths was created such that it's ordered deepest path to highest path.
+	// Since we need to copy xattrs from each directories parent, we should
+	// start at the highest path and then step further down, so iterate over the
+	// list in reverse.
+	for i := len(newPaths) - 1; i >= 0; i-- {
+		newPath := newPaths[i]
+		if err := os.Chmod(newPath, mode); err != nil {
+			return err
+		}
+		if err := os.Chown(newPath, uid, gid); err != nil {
+			return err
+		}
+		if err = copyXattrFromParent(newPath); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // getFileOwner will return the uid and gid for the file at a given path. If the
