@@ -1,5 +1,5 @@
-hash: 6cec3b8e033abff84f106f33e57a381886d30d53c863cc1621d4405c4725efeb
-updated: 2018-02-15T18:15:43.70808531Z
+hash: 5acf09199cba19dc1587c7a56430bf6741f1d7d5e67f6d08f7c7933cc06254b1
+updated: 2018-04-25T14:05:15.474378497-07:00
 imports:
 - name: github.com/ajeddeloh/go-json
   version: 73d058cf8437a1989030afe571eeab9f90eebbbd
@@ -80,6 +80,10 @@ imports:
   version: 03efcb870d84809319ea509714dd6d19a1498483
   subpackages:
   - errorutil
+- name: golang.org/x/sys
+  version: bb9c189858d91f42db229b04d45a4c3d23a7662a
+  subpackages:
+  - unix
 testImports:
 - name: github.com/davecgh/go-spew
   version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
