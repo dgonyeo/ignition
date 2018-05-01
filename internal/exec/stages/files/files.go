@@ -68,6 +68,11 @@ func (stage) Name() string {
 }
 
 func (s stage) Run(config types.Config) bool {
+	if err := util.SelinuxSetPolicyRoot(s.DestDir); err != nil {
+		s.Logger.Crit("failed to set selinux root: %v", err)
+		return false
+	}
+
 	if err := s.createPasswd(config); err != nil {
 		s.Logger.Crit("failed to create users/groups: %v", err)
 		return false
